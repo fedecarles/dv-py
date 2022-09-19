@@ -1,88 +1,95 @@
-import datetime as datetime
 import pandas as pd
 
 
 class DataDiscoverer():
+    """
+    The DataDiscoverer class provides a data constraints discovery.
+    """
 
     constraints: dict
 
-    def __init__(self, df):
-        self.df = df
-        self._guess_date_types(df)
+    def __init__(self, data):
+        self.data = data
+        self._guess_date_types(data)
 
-        self.nr_cols = df.select_dtypes(
+        self.nr_cols = data.select_dtypes(
                 include=['int64', 'float64', 'datetime64']
                 ).columns
-        self.str_cols = df.select_dtypes(include=[object]).columns
+        self.str_cols = data.select_dtypes(include=[object]).columns
 
-    def _guess_date_types(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _guess_date_types(self) -> pd.DataFrame:
         """Convert date columns to datetime"""
-        dt_cols = data.filter(
+        date_cols = self.data.filter(
                 regex='Fecha|date|dt|DT|Date|maturity|EROD'
                 ).columns
-        for dt in dt_cols:
-            data[dt] = pd.to_datetime(
-                    data[dt],
-                    errors='ignore', 
+        for date in date_cols:
+            self.data[date] = pd.to_datetime(
+                    self.data[date],
+                    errors='ignore',
                     infer_datetime_format=True)
-        return data
+        return self.data
 
     def get_data_type(self, colname: str) -> str:
         """Get column data types"""
-        return self.df[colname].dtype
+        return self.data[colname].dtype
 
     def is_nullable(self, colname: str) -> bool:
         """Get nullable constraint True/False"""
-        return self.df[colname].isna().any()
+        return self.data[colname].isna().any()
 
     def is_unique(self, colname: str) -> bool:
         """Get unique constraint True/False"""
-        return ~self.df[colname].duplicated().any()
+        return ~self.data[colname].duplicated().any()
 
     def max_length(self, colname: str) -> int:
         """Get max length constraint"""
-        return max([len(i) for i in self.df[colname]])
+        return max([len(i) for i in self.data[colname]])
 
     def min_length(self, colname: str) -> int:
         """Get min length constraint"""
-        return min([len(i) for i in self.df[colname]])
+        return min([len(i) for i in self.data[colname]])
 
     def value_range(self, colname: str) -> list:
         """Get range of values constraint"""
-        return self.df[colname].unique()
+        return self.data[colname].unique()
 
     def min_value(self, colname: str) -> float:
         """Get min value constraint"""
-        return self.df[colname].min()
+        return self.data[colname].min()
 
     def max_value(self, colname: str) -> float:
         """Get min value constraint"""
-        return self.df[colname].max()
+        return self.data[colname].max()
 
     def generate_constraints(self) -> dict:
         """Generate constraints dict"""
         constraints = {}
-        all_cols = self.df.columns
-        for c in all_cols:
+        all_cols = self.data.columns
+        for col in all_cols:
             constraints[c] = {
-                    "data_type":self.get_data_type(c),
-                    "nullable": self.is_nullable(c)
+                    "data_type":self.get_data_type(col),
+                    "nullable": self.is_nullable(col)
                     }
-        for c in self.str_cols:
+        for col in self.str_cols:
             constraints[c].update({
-                    "unique": self.is_unique(c),
-                    "min_length": self.min_length(c),
-                    "max_length": self.max_length(c),
-                    "value_range": self.value_range(c)
+                    "unique": self.is_unique(col),
+                    "min_length": self.min_length(col),
+                    "max_length": self.max_length(col),
+                    "value_range": self.value_range(col)
                     })
-        for c in self.nr_cols:
+        for col in self.nr_cols:
             constraints[c].update({
-                    "min_value": self.min_value(c),
-                    "max_value": self.max_value(c)
+                    "min_value": self.min_value(col),
+                    "max_value": self.max_value(col)
                     })
         return constraints
-        
+
 class DataVerifier():
+    """
+    The DataVerifier class provides a way to verify constraints on a 
+    dataframe.
+    """
+
     def __init__(self, data: pd.DataFrame, constraints: dict):
         self.constraints = constraints
         self.data = data
@@ -114,20 +121,20 @@ class DataVerifier():
     def check_max_value(self, constraints: str, colname: str) -> pd.Series:
         """Check max value against constraint"""
         if self.data[colname].dtype in [int, float]:
-            e = (self.data[colname] > constraints).sum()
+            max_val = (self.data[colname] > constraints).sum()
         else:
-            e = (pd.to_datetime(self.data[colname],
+            max_val = (pd.to_datetime(self.data[colname],
                 infer_datetime_format=True) > constraints).sum()
-        return e
+        return max_val
 
     def check_min_value(self, constraints: str, colname: str) -> pd.Series:
         """Check min value against constraint"""
         if self.data[colname].dtype in [int, float]:
-            e = (self.data[colname] < constraints).sum()
+            min_val = (self.data[colname] < constraints).sum()
         else:
-            e = (pd.to_datetime(self.data[colname],
+            min_val = (pd.to_datetime(self.data[colname],
                 infer_datetime_format=True) < constraints).sum()
-        return e
+        return min_val
 
     def call_checks(self, check):
         """Map check names with functions"""
@@ -139,15 +146,17 @@ class DataVerifier():
                 "value_range": self.check_value_range,
                 "max_value": self.check_max_value,
                 "min_value": self.check_min_value,
-                "data_type": self.check_data_type 
+                "data_type": self.check_data_type
                 }
         return checks_dict[check]
 
     def verify_data(self) -> dict:
-        d = {}
-        for ix, val in self.constraints.items():
-            d[ix] = dict(
-                    [(k, self.call_checks(k)(self.constraints[ix][k], ix))
-                        for k, v in val.items() if k==k
+        """Run all checks for the dataframe"""
+        verification = {}
+        for col_index, value in self.constraints.items():
+            verification[col_index] = dict(
+                    [(check_key, self.call_checks(key)
+                        (self.constraints[col_index][check_key], col_index))
+                        for check_key, check_value in val.items() if check_key
                     ])
-        return pd.DataFrame(d).T
+        return pd.DataFrame(verification).T
