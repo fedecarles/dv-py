@@ -1,3 +1,5 @@
+"""This module provides the basic objects for the dataframe-validation"""
+
 import pandas as pd
 
 
