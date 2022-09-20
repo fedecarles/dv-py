@@ -11,6 +11,7 @@ data2["Importe"] = data2["Importe"].astype(float)
 
 r1 = DataDiscoverer(data1)
 const = r1.generate_constraints()
+print(const)
 
 
 class TestDataDiscoverer(unittest.TestCase):
@@ -18,11 +19,16 @@ class TestDataDiscoverer(unittest.TestCase):
 
     data = DataDiscoverer(data1)
 
-    def test_data_type(self) -> None:
+    def test_discovery(self) -> None:
         """Test data type"""
         self.assertEqual(self.data.get_data_type("Importe"), 'float64')
-        self.assertEqual(self.data.get_data_type("Establecimiento"), 'object')
-        self.assertEqual(self.data.get_data_type("Cuota"), 'object')
+        self.assertEqual(self.data.is_nullable("Establecimiento"), False)
+        self.assertEqual(self.data.is_unique("Establecimiento"), True)
+        self.assertEqual(self.data.max_length("Establecimiento"), 27)
+        self.assertEqual(self.data.min_length("Establecimiento"), 7)
+        self.assertIn(self.data.value_range("Cuota").all(), ['/', '9/12'])
+        self.assertEqual(self.data.min_value("Importe"), -752.11)
+        self.assertEqual(self.data.max_value("Importe"), 5583.25)
 
 
 class TestDataVerifier(unittest.TestCase):
@@ -30,29 +36,22 @@ class TestDataVerifier(unittest.TestCase):
 
     d2 = DataVerifier(data2, const)
 
-    def test_nullable(self):
+    def test_checks(self):
         """Test null values"""
-        result = self.d2.check_nullable(
-                const["Establecimiento"]["nullable"],
-                "Establecimiento"
-                )
-        self.assertEqual(result, 2)
-
-    def test_unique(self):
-        """Test unique values"""
-        result = self.d2.check_unique(
-                const["Establecimiento"]["unique"],
-                "Establecimiento"
-                )
-        self.assertEqual(result, 1)
-
-    def test_max_length(self):
-        """Test max length"""
-        result = self.d2.check_max_length(
-                const["Establecimiento"]["max_length"],
-                "Establecimiento"
-                )
-        self.assertEqual(result, 0)
+        self.assertEqual(self.d2.check_nullable(
+            const["Establecimiento"]["nullable"], "Establecimiento"), 2)
+        self.assertEqual(self.d2.check_unique(
+            const["Establecimiento"]["unique"], "Establecimiento"), 1)
+        self.assertEqual(self.d2.check_max_length(
+            const["Establecimiento"]["max_length"], "Establecimiento"), 0)
+        self.assertEqual(self.d2.check_max_length(
+            const["Establecimiento"]["max_length"], "Establecimiento"), 0)
+        self.assertEqual(self.d2.check_value_range(
+            const["Establecimiento"]["value_range"], "Establecimiento"), 3)
+        self.assertEqual(self.d2.check_max_value(
+            const["Importe"]["max_value"], "Importe"), 1)
+        self.assertEqual(self.d2.check_min_value(
+            const["Importe"]["min_value"], "Importe"), 0)
 
 
 if __name__ == '__main__':

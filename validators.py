@@ -162,10 +162,9 @@ class DataVerifier():
         verification = {}
         for col_index, value in self.constraints.items():
             verification[col_index] = {
-                    [(check_key, self.call_checks(check_key)
-                        (self.constraints[col_index][check_key], col_index))
-                        for check_key, check_value in value.items()
-                        if check_key
-                        ]}
+                    check_key: self.call_checks(check_key)
+                    (self.constraints[col_index][check_key], col_index)
+                    for check_key, check_value in value.items()
+                    }
 
         return pd.DataFrame(verification).T
