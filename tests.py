@@ -17,6 +17,7 @@ class TestDataDiscoverer(unittest.TestCase):
     data = DataDiscoverer(data1)
 
     def test_data_type(self) -> None:
+        """Test data type"""
         self.assertEqual(self.data.get_data_type("Importe"), 'float64')
         self.assertEqual(self.data.get_data_type("Establecimiento"), 'object')
         self.assertEqual(self.data.get_data_type("Cuota"), 'object')
@@ -28,6 +29,7 @@ class TestDataVerifier(unittest.TestCase):
     d2 = DataVerifier(data2, const)
 
     def test_nullable(self):
+        """Test null values"""
         result = self.d2.check_nullable(
                 const["Establecimiento"]["nullable"],
                 "Establecimiento"
@@ -35,6 +37,7 @@ class TestDataVerifier(unittest.TestCase):
         self.assertEqual(result, 2)
 
     def test_unique(self):
+        """Test unique values"""
         result = self.d2.check_unique(
                 const["Establecimiento"]["unique"],
                 "Establecimiento"
@@ -42,6 +45,7 @@ class TestDataVerifier(unittest.TestCase):
         self.assertEqual(result, 1)
 
     def test_max_length(self):
+        """Test max length"""
         result = self.d2.check_max_length(
                 const["Establecimiento"]["max_length"],
                 "Establecimiento"

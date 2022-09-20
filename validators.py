@@ -93,6 +93,7 @@ class DataVerifier():
     """
 
     def __init__(self, data: pd.DataFrame, constraints: dict):
+        """Init values"""
         self.constraints = constraints
         self.data = data
 
@@ -163,6 +164,6 @@ class DataVerifier():
                         (self.constraints[col_index][check_key], col_index))
                         for check_key, check_value in value.items()
                         if check_key
-                    ]}
+                        ]}
 
         return pd.DataFrame(verification).T
