@@ -1,4 +1,8 @@
-#DataFrame-Validation
+<!-- [START BADGES] -->
+[![Pylint](https://github.com/fedecarles/dataframe-validation/actions/workflows/pylint.yml/badge.svg?branch=main)](https://github.com/fedecarles/dataframe-validation/actions/workflows/pylint.yml)
+<!-- [END BADGES] -->
+
+# DataFrame-Validation
 
 ## What it does
 dataframe-validation is a simplified tool to validate a pandas dataframe 
