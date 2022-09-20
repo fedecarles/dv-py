@@ -1,6 +1,7 @@
 """This module provides the basic objects for the dataframe-validation"""
 
 import pandas as pd
+import logging
 
 
 class DataDiscoverer():
@@ -46,11 +47,11 @@ class DataDiscoverer():
 
     def max_length(self, colname: str) -> int:
         """Get max length constraint"""
-        return max((len(i) for i in self.data[colname]))
+        return max((len(i) for i in self.data[colname]) if isinstance(i, str))
 
     def min_length(self, colname: str) -> int:
         """Get min length constraint"""
-        return min((len(i) for i in self.data[colname]))
+        return min((len(i) for i in self.data[colname]) if isinstance(i, str))
 
     def value_range(self, colname: str) -> list:
         """Get range of values constraint"""
@@ -161,6 +162,7 @@ class DataVerifier():
         """Run all checks for the dataframe"""
         verification = {}
         for col_index, value in self.constraints.items():
+            logging.info(f"Validating {col_index}.")
             verification[col_index] = {
                     check_key: self.call_checks(check_key)
                     (self.constraints[col_index][check_key], col_index)
