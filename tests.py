@@ -1,11 +1,10 @@
-from validators import DataDiscoverer, DataVerifier
-import datetime as datetime
-import pandas as pd
 import unittest
+import pandas as pd
+from validators import DataDiscoverer, DataVerifier
 
-data1 = pd.read_csv(r"data.csv")
+data1 = pd.read_csv(r"test_data/data.csv")
 data1["Importe"] = data1["Importe"].astype(float)
-data2 = pd.read_csv(r"data2.csv")
+data2 = pd.read_csv(r"test_data/data2.csv")
 data2["Importe"] = data2["Importe"].astype(float)
 
 r1 = DataDiscoverer(data1)
@@ -13,6 +12,8 @@ const = r1.generate_constraints()
 
 
 class TestDataDiscoverer(unittest.TestCase):
+    """Test cases for DataDiscoverer"""
+
     data = DataDiscoverer(data1)
 
     def test_data_type(self) -> None:
@@ -22,17 +23,31 @@ class TestDataDiscoverer(unittest.TestCase):
 
 
 class TestDataVerifier(unittest.TestCase):
+    """Test cases for DataVerifier"""
+
     d2 = DataVerifier(data2, const)
 
     def test_nullable(self):
-        result = self.d2.check_nullable(const["Establecimiento"]["nullable"], "Establecimiento")
+        result = self.d2.check_nullable(
+                const["Establecimiento"]["nullable"],
+                "Establecimiento"
+                )
         self.assertEqual(result, 2)
 
     def test_unique(self):
-        result = self.d2.check_unique(const["Establecimiento"]["unique"], "Establecimiento")
+        result = self.d2.check_unique(
+                const["Establecimiento"]["unique"],
+                "Establecimiento"
+                )
         self.assertEqual(result, 1)
 
-    
+    def test_max_length(self):
+        result = self.d2.check_max_length(
+                const["Establecimiento"]["max_length"],
+                "Establecimiento"
+                )
+        self.assertEqual(result, 0)
 
-if '__name__' == '__main__':
+
+if __name__ == '__main__':
     unittest.main()

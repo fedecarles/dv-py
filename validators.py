@@ -9,8 +9,9 @@ class DataDiscoverer():
     constraints: dict
 
     def __init__(self, data):
+        """Init values"""
         self.data = data
-        self._guess_date_types(data)
+        self._guess_date_types()
 
         self.nr_cols = data.select_dtypes(
                 include=['int64', 'float64', 'datetime64']
@@ -43,11 +44,11 @@ class DataDiscoverer():
 
     def max_length(self, colname: str) -> int:
         """Get max length constraint"""
-        return max([len(i) for i in self.data[colname]])
+        return max((len(i) for i in self.data[colname]))
 
     def min_length(self, colname: str) -> int:
         """Get min length constraint"""
-        return min([len(i) for i in self.data[colname]])
+        return min((len(i) for i in self.data[colname]))
 
     def value_range(self, colname: str) -> list:
         """Get range of values constraint"""
@@ -67,7 +68,7 @@ class DataDiscoverer():
         all_cols = self.data.columns
         for col in all_cols:
             constraints[col] = {
-                    "data_type":self.get_data_type(col),
+                    "data_type": self.get_data_type(col),
                     "nullable": self.is_nullable(col)
                     }
         for col in self.str_cols:
@@ -84,9 +85,10 @@ class DataDiscoverer():
                     })
         return constraints
 
+
 class DataVerifier():
     """
-    The DataVerifier class provides a way to verify constraints on a 
+    The DataVerifier class provides a way to verify constraints on a
     dataframe.
     """
 
@@ -123,8 +125,10 @@ class DataVerifier():
         if self.data[colname].dtype in [int, float]:
             max_val = (self.data[colname] > constraints).sum()
         else:
-            max_val = (pd.to_datetime(self.data[colname],
-                infer_datetime_format=True) > constraints).sum()
+            max_val = (
+                    pd.to_datetime(self.data[colname],
+                    infer_datetime_format=True) > constraints
+                    ).sum()
         return max_val
 
     def check_min_value(self, constraints: str, colname: str) -> pd.Series:
@@ -154,9 +158,11 @@ class DataVerifier():
         """Run all checks for the dataframe"""
         verification = {}
         for col_index, value in self.constraints.items():
-            verification[col_index] = dict(
+            verification[col_index] = {
                     [(check_key, self.call_checks(check_key)
                         (self.constraints[col_index][check_key], col_index))
-                        for check_key, check_value in value.items() if check_key
-                    ])
+                        for check_key, check_value in value.items()
+                        if check_key
+                    ]}
+
         return pd.DataFrame(verification).T
