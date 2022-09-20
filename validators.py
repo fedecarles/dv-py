@@ -66,19 +66,19 @@ class DataDiscoverer():
         constraints = {}
         all_cols = self.data.columns
         for col in all_cols:
-            constraints[c] = {
+            constraints[col] = {
                     "data_type":self.get_data_type(col),
                     "nullable": self.is_nullable(col)
                     }
         for col in self.str_cols:
-            constraints[c].update({
+            constraints[col].update({
                     "unique": self.is_unique(col),
                     "min_length": self.min_length(col),
                     "max_length": self.max_length(col),
                     "value_range": self.value_range(col)
                     })
         for col in self.nr_cols:
-            constraints[c].update({
+            constraints[col].update({
                     "min_value": self.min_value(col),
                     "max_value": self.max_value(col)
                     })
@@ -155,8 +155,8 @@ class DataVerifier():
         verification = {}
         for col_index, value in self.constraints.items():
             verification[col_index] = dict(
-                    [(check_key, self.call_checks(key)
+                    [(check_key, self.call_checks(check_key)
                         (self.constraints[col_index][check_key], col_index))
-                        for check_key, check_value in val.items() if check_key
+                        for check_key, check_value in value.items() if check_key
                     ])
         return pd.DataFrame(verification).T
