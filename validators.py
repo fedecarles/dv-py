@@ -1,7 +1,7 @@
 """This module provides the basic objects for the dataframe-validation"""
 
-import pandas as pd
 import logging
+import pandas as pd
 
 
 class DataDiscoverer():
@@ -162,7 +162,7 @@ class DataVerifier():
         """Run all checks for the dataframe"""
         verification = {}
         for col_index, value in self.constraints.items():
-            logging.info(f"Validating {col_index}.")
+            logging.info("Validating %c.", col_index)
             verification[col_index] = {
                     check_key: self.call_checks(check_key)
                     (self.constraints[col_index][check_key], col_index)
