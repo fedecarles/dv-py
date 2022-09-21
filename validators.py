@@ -47,11 +47,11 @@ class DataDiscoverer():
 
     def max_length(self, colname: str) -> int:
         """Get max length constraint"""
-        return max((len(i) for i in self.data[colname]) if isinstance(i, str))
+        return max(self.data[colname].map(len))
 
     def min_length(self, colname: str) -> int:
         """Get min length constraint"""
-        return min((len(i) for i in self.data[colname]) if isinstance(i, str))
+        return min(self.data[colname].map(len))
 
     def value_range(self, colname: str) -> list:
         """Get range of values constraint"""
@@ -131,7 +131,7 @@ class DataVerifier():
         else:
             max_val = (
                     pd.to_datetime(self.data[colname],
-                    infer_datetime_format=True) > constraints
+                        infer_datetime_format=True) > constraints
                     ).sum()
         return max_val
 
