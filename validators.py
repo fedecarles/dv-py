@@ -2,8 +2,8 @@
 
 import numbers
 import logging
-import pandas as pd
 from dataclasses import dataclass
+import pandas as pd
 
 
 @dataclass
@@ -14,34 +14,40 @@ class DataParser():
     """
     df: pd.DataFrame()
 
-    def __init__(self, df):
-        self.df = df
+    def __init__(self, data):
+        self.data = data
         self._optimize_dtypes()
         self._guess_date_types()
 
     def _guess_date_types(self) -> pd.DataFrame:
         """Convert date columns to datetime"""
-        date_cols = self.df.filter(
+        date_cols = self.data.filter(
                 regex='Fecha|date|dt|DT|Date|maturity|EROD'
                 ).columns
         for date in date_cols:
-            self.df[date] = pd.to_datetime(
-                    self.df[date],
+            self.data[date] = pd.to_datetime(
+                    self.data[date],
                     errors='ignore',
                     infer_datetime_format=True).astype('datetime64[ns]')
-        return self.df
+        return self.data
 
     def _optimize_dtypes(self) -> pd.DataFrame:
         """Optimize data types"""
-        for col in self.df.columns:
-            if issubclass(self.df[col].dtypes.type, numbers.Integral):
-                self.df[col] = pd.to_numeric(self.df[col], downcast='integer')
-            elif issubclass(self.df[col].dtypes.type, numbers.Real):
-                self.df[col] = pd.to_numeric(self.df[col], downcast='float')
-            elif issubclass(self.df[col].dtypes.type, object) \
-                    and (self.df[col].duplicated().any()):
-                self.df[col] = self.df[col].astype('category')
-        return self.df
+        for col in self.data.columns:
+            if issubclass(self.data[col].dtypes.type, numbers.Integral):
+                self.data[col] = pd.to_numeric(
+                        self.data[col],
+                        downcast='integer'
+                        )
+            elif issubclass(self.data[col].dtypes.type, numbers.Real):
+                self.data[col] = pd.to_numeric(
+                        self.data[col],
+                        downcast='float'
+                        )
+            elif issubclass(self.data[col].dtypes.type, object) \
+                    and (self.data[col].duplicated().any()):
+                self.data[col] = self.data[col].astype('category')
+        return self.data
 
 
 @dataclass
