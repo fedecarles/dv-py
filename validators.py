@@ -12,7 +12,7 @@ class DataParser():
     The DataParser class contains functions to optimize and
     prepare a pandas DataFrame
     """
-    df: pd.DataFrame()
+    data: pd.DataFrame()
 
     def __init__(self, data):
         self.data = data
