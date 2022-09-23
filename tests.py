@@ -8,6 +8,8 @@ data1 = pd.read_csv(r"test_data/data.csv")
 data1["Importe"] = data1["Importe"].astype(float)
 data2 = pd.read_csv(r"test_data/data2.csv")
 data2["Importe"] = data2["Importe"].astype(float)
+data3 = pd.read_csv(r"test_data/data3.csv")
+data3["Importe"] = data2["Importe"].astype(float)
 
 r1 = DataDiscoverer(data1)
 const = r1.generate_constraints()
@@ -21,7 +23,7 @@ class TestDataDiscoverer(unittest.TestCase):
 
     def test_discovery(self) -> None:
         """Test data type"""
-        self.assertEqual(self.data.get_data_type("Importe"), 'float64')
+        self.assertEqual(self.data.get_data_type("Importe"), 'float32')
         self.assertEqual(self.data.is_nullable("Establecimiento"), False)
         self.assertEqual(self.data.is_unique("Establecimiento"), True)
         self.assertEqual(self.data.max_length("Establecimiento"), 27)
@@ -47,7 +49,7 @@ class TestDataVerifier(unittest.TestCase):
         self.assertEqual(self.d2.check_max_length(
             const["Establecimiento"]["max_length"], "Establecimiento"), 0)
         self.assertEqual(self.d2.check_value_range(
-            const["Establecimiento"]["value_range"], "Establecimiento"), 3)
+            const["Cuota"]["value_range"], "Cuota"), 3)
         self.assertEqual(self.d2.check_max_value(
             const["Importe"]["max_value"], "Importe"), 1)
         self.assertEqual(self.d2.check_min_value(

@@ -1,9 +1,50 @@
 """This module provides the basic objects for the dataframe-validation"""
 
+import numbers
 import logging
 import pandas as pd
+from dataclasses import dataclass
 
 
+@dataclass
+class DataParser():
+    """
+    The DataParser class contains functions to optimize and
+    prepare a pandas DataFrame
+    """
+    df: pd.DataFrame()
+
+    def __init__(self, df):
+        self.df = df
+        self._optimize_dtypes()
+        self._guess_date_types()
+
+    def _guess_date_types(self) -> pd.DataFrame:
+        """Convert date columns to datetime"""
+        date_cols = self.df.filter(
+                regex='Fecha|date|dt|DT|Date|maturity|EROD'
+                ).columns
+        for date in date_cols:
+            self.df[date] = pd.to_datetime(
+                    self.df[date],
+                    errors='ignore',
+                    infer_datetime_format=True).astype('datetime64[ns]')
+        return self.df
+
+    def _optimize_dtypes(self) -> pd.DataFrame:
+        """Optimize data types"""
+        for col in self.df.columns:
+            if issubclass(self.df[col].dtypes.type, numbers.Integral):
+                self.df[col] = pd.to_numeric(self.df[col], downcast='integer')
+            elif issubclass(self.df[col].dtypes.type, numbers.Real):
+                self.df[col] = pd.to_numeric(self.df[col], downcast='float')
+            elif issubclass(self.df[col].dtypes.type, object) \
+                    and (self.df[col].duplicated().any()):
+                self.df[col] = self.df[col].astype('category')
+        return self.df
+
+
+@dataclass
 class DataDiscoverer():
     """
     The DataDiscoverer class provides a data constraints discovery.
@@ -14,24 +55,11 @@ class DataDiscoverer():
     def __init__(self, data):
         """Init values"""
         self.data = data
-        self._guess_date_types()
-
         self.nr_cols = data.select_dtypes(
-                include=['int64', 'float64', 'datetime64']
+                include=['number', 'datetime64']
                 ).columns
-        self.str_cols = data.select_dtypes(include=[object]).columns
-
-    def _guess_date_types(self) -> pd.DataFrame:
-        """Convert date columns to datetime"""
-        date_cols = self.data.filter(
-                regex='Fecha|date|dt|DT|Date|maturity|EROD'
-                ).columns
-        for date in date_cols:
-            self.data[date] = pd.to_datetime(
-                    self.data[date],
-                    errors='ignore',
-                    infer_datetime_format=True)
-        return self.data
+        self.cat_cols = data.select_dtypes(include=['category']).columns
+        self.constraints = self.generate_constraints()
 
     def get_data_type(self, colname: str) -> str:
         """Get column data types"""
@@ -74,7 +102,7 @@ class DataDiscoverer():
                     "data_type": self.get_data_type(col),
                     "nullable": self.is_nullable(col)
                     }
-        for col in self.str_cols:
+        for col in self.cat_cols:
             constraints[col].update({
                     "unique": self.is_unique(col),
                     "min_length": self.min_length(col),
@@ -88,12 +116,20 @@ class DataDiscoverer():
                     })
         return constraints
 
+    def modify_constraint(self, column: str,  modify_dict: dict) -> dict:
+        """Modify a constrain for a specific column"""
+        self.constraints[column].update(modify_dict)
+        return self.constraints
 
+
+@dataclass
 class DataVerifier():
     """
     The DataVerifier class provides a way to verify constraints on a
     dataframe.
     """
+    constraints: dict
+    data: pd.DataFrame
 
     def __init__(self, data: pd.DataFrame, constraints: dict):
         """Init values"""
@@ -106,7 +142,11 @@ class DataVerifier():
 
     def check_nullable(self, constraints: str, colname: str) -> pd.Series:
         """Check null values against constraint"""
-        return (self.data[colname].isna() != constraints).sum()
+        if not constraints:
+            nulls = self.data[colname].isna().sum()
+        else:
+            nulls = 0
+        return nulls
 
     def check_unique(self, constraints: str, colname: str) -> pd.Series:
         """Check duplicate values against constraint"""
@@ -126,7 +166,7 @@ class DataVerifier():
 
     def check_max_value(self, constraints: str, colname: str) -> pd.Series:
         """Check max value against constraint"""
-        if self.data[colname].dtype in [int, float]:
+        if self.data[colname].dtype.kind in "biufc":
             max_val = (self.data[colname] > constraints).sum()
         else:
             max_val = (
@@ -137,7 +177,7 @@ class DataVerifier():
 
     def check_min_value(self, constraints: str, colname: str) -> pd.Series:
         """Check min value against constraint"""
-        if self.data[colname].dtype in [int, float]:
+        if self.data[colname].dtype.kind in "biufc":
             min_val = (self.data[colname] < constraints).sum()
         else:
             min_val = (pd.to_datetime(self.data[colname],
@@ -168,5 +208,4 @@ class DataVerifier():
                     (self.constraints[col_index][check_key], col_index)
                     for check_key, check_value in value.items()
                     }
-
         return pd.DataFrame(verification).T
