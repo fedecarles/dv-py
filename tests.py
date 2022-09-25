@@ -1,4 +1,4 @@
-"""This module has unit tests for the dataframe-validation"""
+"""This module has unit tests for the dataframe_validation"""
 
 import unittest
 import pandas as pd
@@ -19,9 +19,8 @@ validation_data = pd.read_csv(
 
 
 d1 = DataParser(constraints_data)
-const = Constraints(d1.data)
-
 d2 = DataParser(validation_data)
+c1 = Constraints(d1.data).constraints
 
 
 class TestConstraints(unittest.TestCase):
@@ -41,10 +40,10 @@ class TestConstraints(unittest.TestCase):
                 self.data.is_unique("bmi"), False
                 )
         self.assertEqual(
-                self.data.max_length("avg_glucose_level"), 18
+                self.data.max_length("Residence_type"), 5
                 )
         self.assertEqual(
-                self.data.min_length("avg_glucose_level"), 4
+                self.data.min_length("Residence_type"), 5
                 )
         self.assertIn(
                 self.data.value_range("work_type").categories.all(),
@@ -66,24 +65,24 @@ class TestConstraints(unittest.TestCase):
 class TestVerifier(unittest.TestCase):
     """Test cases for DataVerifier"""
 
-    d2 = Verifier(d2.data, const.constaints)
+    d2 = Verifier(d2.data, c1)
 
     def test_checks(self):
         """Test null values"""
         self.assertEqual(self.d2.check_nullable(
-            const["age"]["nullable"], "age"), 5)
+            c1["age"]["nullable"], "age"), 5)
         self.assertEqual(self.d2.check_unique(
-            const["gender"]["unique"], "gender"), 0)
+            c1["gender"]["unique"], "gender"), 0)
         self.assertEqual(self.d2.check_min_length(
-            const["gender"]["min_length"], "gender"), 1)
+            c1["gender"]["min_length"], "gender"), 1)
         self.assertEqual(self.d2.check_max_length(
-            const["Residence_type"]["max_length"], "Residence_type"), 2)
+            c1["Residence_type"]["max_length"], "Residence_type"), 2)
         self.assertEqual(self.d2.check_value_range(
-            const["work_type"]["value_range"], "work_type"), 3)
+            c1["work_type"]["value_range"], "work_type"), 3)
         self.assertEqual(self.d2.check_max_value(
-            const["bmi"]["max_value"], "bmi"), 1)
+            c1["bmi"]["max_value"], "bmi"), 1)
         self.assertEqual(self.d2.check_min_value(
-            const["bmi"]["min_value"], "bmi"), 1)
+            c1["bmi"]["min_value"], "bmi"), 1)
 
 
 if __name__ == '__main__':

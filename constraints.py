@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 @dataclass
 class Constraints():
     """
-    The DataDiscoverer class provides a data constraints discovery.
+    The Constraints class provides a data constraints discovery.
     """
 
     constraints: dict
