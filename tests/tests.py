@@ -3,7 +3,7 @@
 import unittest
 import pandas as pd
 import numpy as np
-from constraints_data import ConstraintsData
+from dataparser import DataParser
 from constraints import Constraints
 from verifier import Verifier
 
@@ -18,9 +18,10 @@ validation_data = pd.read_csv(
         )
 
 
-d1 = ConstraintsData(constraints_data)
-const = Constraints(d1.data).generate_constraints()
-d2 = ConstraintsData(validation_data)
+d1 = DataParser(constraints_data)
+const = Constraints(d1.data)
+
+d2 = DataParser(validation_data)
 
 
 class TestConstraints(unittest.TestCase):
@@ -65,7 +66,7 @@ class TestConstraints(unittest.TestCase):
 class TestVerifier(unittest.TestCase):
     """Test cases for DataVerifier"""
 
-    d2 = Verifier(d2.data, const)
+    d2 = Verifier(d2.data, const.constaints)
 
     def test_checks(self):
         """Test null values"""
