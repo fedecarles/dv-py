@@ -1,5 +1,6 @@
 <!-- [START BADGES] -->
 [![Pylint](https://github.com/fedecarles/dataframe-validation/actions/workflows/pylint.yml/badge.svg?branch=main)](https://github.com/fedecarles/dataframe-validation/actions/workflows/pylint.yml)
+[![Tests](https://github.com/fedecarles/dataframe-validation/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/fedecarles/dataframe-validation/actions/workflows/tests.yml)
 <!-- [END BADGES] -->
 
 # DataFrame-Validation
