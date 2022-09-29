@@ -1,11 +1,7 @@
 """This module provides the basic objects for the dataframe-validation"""
 
-import logging
-import pandas as pd
 from dataclasses import dataclass
-
-
-logging.basicConfig(level=logging.INFO)
+import pandas as pd
 
 
 @dataclass

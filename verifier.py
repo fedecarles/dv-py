@@ -1,11 +1,7 @@
 """This module provides the basic objects for the dataframe-validation"""
 
-import logging
 from dataclasses import dataclass
 import pandas as pd
-
-
-logging.basicConfig(level=logging.INFO)
 
 
 @dataclass
@@ -26,9 +22,7 @@ class Verifier():
     def check_data_type(self, constraint: str, col: str) -> bool:
         """Check data type against constraint"""
         if self.data[col].dtype != constraint:
-            return True
-        else:
-            return False
+            return bool
 
     def check_nullable(self, constraint: str, col: str) -> int:
         """Check null values against constraint"""
@@ -37,7 +31,9 @@ class Verifier():
             break_rows = self.data.loc[self.data[col].isna()].copy()
             break_rows["Validation"] = f"nullable: {col}"
             self.failed_rows.append(break_rows)
-            return break_count
+        else:
+            break_count = 0
+        return break_count
 
     def check_unique(self, constraint: str, col: str) -> int:
         """Check duplicate values against constraint"""
