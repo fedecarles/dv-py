@@ -21,8 +21,7 @@ class Verifier():
 
     def check_data_type(self, constraint: str, col: str) -> bool:
         """Check data type against constraint"""
-        if self.data[col].dtype != constraint:
-            return bool
+        return self.data[col].dtype != constraint
 
     def check_nullable(self, constraint: str, col: str) -> int:
         """Check null values against constraint"""
