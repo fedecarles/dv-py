@@ -1,12 +1,8 @@
 """This module provides the basic objects for the dataframe-validation"""
 
-import logging
 from dataclasses import dataclass
 import pandas as pd
 import numpy as np
-
-
-logging.basicConfig(level=logging.INFO)
 
 
 @dataclass
@@ -21,9 +17,8 @@ class DataParser:
     """
     data: pd.DataFrame()
 
-    def __init__(self, data: pd.DataFrame):
+    def __post_init__(self):
         """Init values"""
-        self.data = data
         self._optimize_dtypes()
         self._guess_date_types()
 
@@ -77,5 +72,4 @@ class DataParser:
             elif issubclass(self.data[col].dtypes.type, np.object_) \
                     and (self.data[col].duplicated().any()):
                 self.data[col] = self.data[col].astype('category')
-        logging.info("Data Types:\n %s", self.data.dtypes)
         return self.data

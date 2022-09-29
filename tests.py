@@ -20,7 +20,10 @@ validation_data = pd.read_csv(
 
 d1 = DataParser(constraints_data)
 d2 = DataParser(validation_data)
-c1 = Constraints(d1.data).constraints
+c1 = Constraints(d1.data)
+c1.modify_constraint("age", {"unique": True})
+c1 = c1.constraints
+v1 = Verifier(d2.data, c1)
 
 
 class TestConstraints(unittest.TestCase):
@@ -58,30 +61,30 @@ class TestConstraints(unittest.TestCase):
                 np.float32(271.74)
                 )
         self.assertIs(
-                type(self.data.generate_constraints()), dict
+                type(self.data.constraints), dict
                 )
 
 
 class TestVerifier(unittest.TestCase):
     """Test cases for DataVerifier"""
 
-    d2 = Verifier(d2.data, c1)
+    v1 = Verifier(d2.data, c1)
 
     def test_checks(self):
         """Test null values"""
-        self.assertEqual(self.d2.check_nullable(
+        self.assertEqual(self.v1.check_nullable(
             c1["age"]["nullable"], "age"), 5)
-        self.assertEqual(self.d2.check_unique(
-            c1["gender"]["unique"], "gender"), 0)
-        self.assertEqual(self.d2.check_min_length(
+        self.assertEqual(self.v1.check_unique(
+            c1["age"]["unique"], "age"), 4876)
+        self.assertEqual(self.v1.check_min_length(
             c1["gender"]["min_length"], "gender"), 1)
-        self.assertEqual(self.d2.check_max_length(
+        self.assertEqual(self.v1.check_max_length(
             c1["Residence_type"]["max_length"], "Residence_type"), 2)
-        self.assertEqual(self.d2.check_value_range(
+        self.assertEqual(self.v1.check_value_range(
             c1["work_type"]["value_range"], "work_type"), 3)
-        self.assertEqual(self.d2.check_max_value(
+        self.assertEqual(self.v1.check_max_value(
             c1["bmi"]["max_value"], "bmi"), 1)
-        self.assertEqual(self.d2.check_min_value(
+        self.assertEqual(self.v1.check_min_value(
             c1["bmi"]["min_value"], "bmi"), 1)
 
 

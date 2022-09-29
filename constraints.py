@@ -1,6 +1,7 @@
 """This module provides the basic objects for the dataframe-validation"""
 
 import logging
+import pandas as pd
 from dataclasses import dataclass
 
 
@@ -13,16 +14,15 @@ class Constraints():
     The Constraints class provides a data constraints discovery.
     """
 
-    constraints: dict
+    data: pd.DataFrame
 
-    def __init__(self, data):
-        """Init values"""
-        self.data = data
-        self.nr_cols = data.select_dtypes(
+    def __post_init__(self):
+        """Post init values"""
+        self.nr_cols = self.data.select_dtypes(
                 include=['number', 'datetime64']
                 ).columns
-        self.cat_cols = data.select_dtypes(include=['category']).columns
-        self.constraints = self.generate_constraints()
+        self.cat_cols = self.data.select_dtypes(include=['category']).columns
+        self.constraints = self.__generate_constraints()
 
     def get_data_type(self, colname: str) -> str:
         """Get column data types"""
@@ -38,11 +38,11 @@ class Constraints():
 
     def max_length(self, colname: str) -> int:
         """Get max length constraint"""
-        return max(self.data[colname].map(len))
+        return max(self.data[colname].map(str).map(len))
 
     def min_length(self, colname: str) -> int:
         """Get min length constraint"""
-        return min(self.data[colname].map(len))
+        return min(self.data[colname].map(str).map(len))
 
     def value_range(self, colname: str) -> list:
         """Get range of values constraint"""
@@ -56,7 +56,7 @@ class Constraints():
         """Get min value constraint"""
         return self.data[colname].max()
 
-    def generate_constraints(self) -> dict:
+    def __generate_constraints(self) -> dict:
         """Generate constraints dict"""
         constraints = {}
         all_cols = self.data.columns
