@@ -1,4 +1,4 @@
-"""This module provides the basic objects for the dataframe-validation"""
+"""This module provides the basic objects for the dataframe_validation"""
 
 from dataclasses import dataclass
 import pandas as pd
@@ -21,7 +21,7 @@ class Verifier():
 
     def check_data_type(self, constraint: str, col: str) -> bool:
         """Check data type against constraint"""
-        return self.data[col].dtype != constraint
+        return self.data[col].dtype.name != constraint
 
     def check_nullable(self, constraint: str, col: str) -> int:
         """Check null values against constraint"""
@@ -75,36 +75,42 @@ class Verifier():
 
     def check_max_value(self, constraint: str, col: str):
         """Check max value against constraint"""
-        if self.data[col].dtype.kind in "biufc":
-            break_count = (self.data[col] > constraint).sum()
-            break_rows = self.data.loc[self.data[col] > constraint].copy()
-        else:
-            break_count = (
-                    pd.to_datetime(self.data[col],
-                        infer_datetime_format=True) > constraint
-                    ).sum()
-            break_rows = self.data.loc[
-                    pd.to_datetime(self.data[col],
-                        infer_datetime_format=True) > constraint
-                    ].copy()
-            break_rows["Validation"] = f"max_value: {col}"
+        break_count = (self.data[col] > constraint).sum()
+        break_rows = self.data.loc[self.data[col] > constraint].copy()
+        break_rows["Validation"] = f"max_value: {col}"
         return break_count
 
     def check_min_value(self, constraint: str, col: str):
         """Check min value against constraint"""
-        if self.data[col].dtype.kind in "biufc":
-            break_count = (self.data[col] < constraint).sum()
-            break_rows = self.data.loc[self.data[col] < constraint].copy()
-        else:
-            break_count = (
-                    pd.to_datetime(self.data[col],
-                        infer_datetime_format=True) < constraint
-                    ).sum()
-            break_rows = self.data.loc[
-                    pd.to_datetime(self.data[col],
-                        infer_datetime_format=True) < constraint
-                    ].copy()
-            break_rows["Validation"] = f"max_value: {col}"
+        break_count = (self.data[col] < constraint).sum()
+        break_rows = self.data.loc[self.data[col] < constraint].copy()
+        break_rows["Validation"] = f"max_value: {col}"
+        return break_count
+
+    def check_min_date(self, constraint: str, col: str) -> int:
+        """Check min date against constraint"""
+        break_count = (
+                pd.to_datetime(self.data[col],
+                    infer_datetime_format=True) < pd.to_datetime(constraint)
+                ).sum()
+        break_rows = self.data.loc[
+                pd.to_datetime(self.data[col],
+                    infer_datetime_format=True) < pd.to_datetime(constraint)
+                ].copy()
+        break_rows["Validation"] = f"min_date: {col}"
+        return break_count
+
+    def check_max_date(self, constraint: str, col: str) -> int:
+        """Check max date against constraint"""
+        break_count = (
+                pd.to_datetime(self.data[col],
+                    infer_datetime_format=True) > pd.to_datetime(constraint)
+                ).sum()
+        break_rows = self.data.loc[
+                pd.to_datetime(self.data[col],
+                    infer_datetime_format=True) > pd.to_datetime(constraint)
+                ].copy()
+        break_rows["Validation"] = f"max_date: {col}"
         return break_count
 
     def _call_checks(self, check: str) -> dict:
@@ -120,6 +126,7 @@ class Verifier():
             A dictionary of calculated constraints.
         """
         checks_dict = {
+                "data_type": self.check_data_type,
                 "nullable": self.check_nullable,
                 "unique": self.check_unique,
                 "max_length": self.check_max_length,
@@ -127,7 +134,8 @@ class Verifier():
                 "value_range": self.check_value_range,
                 "max_value": self.check_max_value,
                 "min_value": self.check_min_value,
-                "data_type": self.check_data_type
+                "max_date": self.check_max_date,
+                "min_date": self.check_min_date
                 }
         return checks_dict[check]
 
