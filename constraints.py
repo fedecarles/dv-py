@@ -44,11 +44,11 @@ class Constraints():
         """Get min value constraint"""
         return data[colname].max()
 
-    def min_date(self, data: pd.DataFrame, colname: str) -> pd.datetime:
+    def min_date(self, data: pd.DataFrame, colname: str) -> str:
         """Get min value constraint"""
         return data[colname].min().strftime("%Y-%m-%d")
 
-    def max_date(self, data: pd.DataFrame, colname: str) -> pd.datetime:
+    def max_date(self, data: pd.DataFrame, colname: str) -> str:
         """Get min value constraint"""
         return data[colname].max().strftime("%Y-%m-%d")
 
