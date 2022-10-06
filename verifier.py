@@ -26,92 +26,82 @@ class Verifier():
     def check_nullable(self, constraint: str, col: str) -> int:
         """Check null values against constraint"""
         if not constraint:
-            break_count = self.data[col].isna().sum()
-            break_rows = self.data.loc[self.data[col].isna()].copy()
-            break_rows["Validation"] = f"nullable: {col}"
-            self.failed_rows.append(break_rows)
+            breaks = self.data[col].isna()
+            rows = self.data.loc[breaks].copy()
+            rows["Validation"] = f"nullable: {col}"
+            self.failed_rows.append(rows)
         else:
-            break_count = 0
-        return break_count
+            breaks = 0
+        return breaks.sum()
 
     def check_unique(self, constraint: str, col: str) -> int:
         """Check duplicate values against constraint"""
         if constraint:
-            break_count = self.data[col].duplicated().sum()
-            break_rows = self.data.loc[self.data[col].duplicated()].copy()
-            break_rows["Validation"] = f"unique: {col}"
-            self.failed_rows.append(break_rows)
+            breaks = self.data[col].duplicated()
+            rows = self.data.loc[breaks].copy()
+            rows["Validation"] = f"unique: {col}"
+            self.failed_rows.append(rows)
         else:
-            break_count = 0
-        return break_count
+            breaks = pd.Series(False)
+        return breaks.sum()
 
     def check_max_length(self, constraint: str, col: str) -> int:
         """Check max length against constraint"""
-        break_count = (self.data[col].str.len() > constraint).sum()
-        break_rows = self.data.loc[
-                self.data[col].str.len() > constraint
-                ].copy()
-        break_rows["Validation"] = f"max_length: {col}"
-        self.failed_rows.append(break_rows)
-        return break_count
+        breaks = (self.data[col].str.len() > constraint)
+        rows = self.data.loc[breaks].copy()
+        rows["Validation"] = f"max_length: {col}"
+        self.failed_rows.append(rows)
+        return breaks.sum()
 
     def check_min_length(self, constraint: str, col: str) -> int:
         """Check min length against constraint"""
-        break_count = (self.data[col].str.len() < constraint).sum()
-        break_rows = self.data.loc[
-                self.data[col].str.len() < constraint
-                ].copy()
-        break_rows["Validation"] = f"min_legth:{col}"
-        self.failed_rows.append(break_rows)
-        return break_count
+        breaks = (self.data[col].str.len() < constraint)
+        rows = self.data.loc[breaks].copy()
+        rows["Validation"] = f"min_legth:{col}"
+        self.failed_rows.append(rows)
+        return breaks.sum()
 
     def check_value_range(self, constraint: str, col: str) -> int:
         """Check range of values against constraint"""
-        break_count = (~self.data[col].isin(constraint)).sum()
-        break_rows = self.data.loc[~self.data[col].isin(constraint)].copy()
-        break_rows["Validation"] = f"value_range: {col}"
-        self.failed_rows.append(break_rows)
-        return break_count
+        breaks = ~self.data[col].isin(constraint)
+        rows = self.data.loc[breaks].copy()
+        rows["Validation"] = f"value_range: {col}"
+        self.failed_rows.append(rows)
+        return breaks.sum()
 
     def check_max_value(self, constraint: str, col: str):
         """Check max value against constraint"""
-        break_count = (self.data[col] > constraint).sum()
-        break_rows = self.data.loc[self.data[col] > constraint].copy()
-        break_rows["Validation"] = f"max_value: {col}"
-        return break_count
+        breaks = (self.data[col] > constraint)
+        rows = self.data.loc[breaks].copy()
+        rows["Validation"] = f"max_value: {col}"
+        return breaks.sum()
 
     def check_min_value(self, constraint: str, col: str):
         """Check min value against constraint"""
-        break_count = (self.data[col] < constraint).sum()
-        break_rows = self.data.loc[self.data[col] < constraint].copy()
-        break_rows["Validation"] = f"max_value: {col}"
-        return break_count
+        breaks = (self.data[col] < constraint)
+        rows = self.data.loc[breaks].copy()
+        rows["Validation"] = f"max_value: {col}"
+        return breaks.sum()
 
     def check_min_date(self, constraint: str, col: str) -> int:
         """Check min date against constraint"""
-        break_count = (
+        breaks = (
                 pd.to_datetime(self.data[col],
                     infer_datetime_format=True) < pd.to_datetime(constraint)
-                ).sum()
-        break_rows = self.data.loc[
-                pd.to_datetime(self.data[col],
-                    infer_datetime_format=True) < pd.to_datetime(constraint)
-                ].copy()
-        break_rows["Validation"] = f"min_date: {col}"
-        return break_count
+                )
+        rows = self.data.loc[breaks].copy()
+        rows["Validation"] = f"min_date: {col}"
+        return breaks.sum()
 
     def check_max_date(self, constraint: str, col: str) -> int:
         """Check max date against constraint"""
-        break_count = (
+        breaks = (
                 pd.to_datetime(self.data[col],
                     infer_datetime_format=True) > pd.to_datetime(constraint)
-                ).sum()
-        break_rows = self.data.loc[
-                pd.to_datetime(self.data[col],
-                    infer_datetime_format=True) > pd.to_datetime(constraint)
-                ].copy()
-        break_rows["Validation"] = f"max_date: {col}"
-        return break_count
+                )
+        rows = self.data.loc[breaks].copy()
+        rows["Validation"] = f"max_date: {col}"
+        return breaks.sum()
 
     def _call_checks(self, check: str) -> dict:
         """
