@@ -31,7 +31,7 @@ class Verifier():
             rows["Validation"] = f"nullable: {col}"
             self.failed_rows.append(rows)
         else:
-            breaks = 0
+            breaks = ~self.data[col].isna()
         return breaks.sum()
 
     def check_unique(self, constraint: str, col: str) -> int:
