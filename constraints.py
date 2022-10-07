@@ -15,7 +15,7 @@ class TypeEncoder(json.JSONEncoder):
             return int(o)
         if isinstance(o, np.floating):
             return float(o)
-        return super(TypeEncoder, self).default(o)
+        return super().default(o)
 
 
 @dataclass
@@ -105,21 +105,21 @@ class Constraints():
     def save_as(self, save_as: str):
         """Save constraints to file."""
         if save_as.endswith(".json"):
-            with open(save_as, "w", encoding="utf-8") as file:
-                json.dump(self.constraints, file, indent=4, cls=TypeEncoder)
+            with open(save_as, "w", encoding="utf-8") as s_file:
+                json.dump(self.constraints, s_file, indent=4, cls=TypeEncoder)
         elif save_as.endswith(".csv"):
             frame = pd.DataFrame(self.constraints).T
             frame.to_csv(save_as)
         else:
             raise ValueError("Save values can be 'json' or 'csv'")
 
-    def read_constraints(self, file):
+    def read_constraints(self, file_name):
         """Read constraints from file."""
-        if file.endswith(".json"):
-            with open(file, "r", encoding="utf-8") as file:
-                self.constraints = json.loads(file.read())
-        elif file.endswith(".csv"):
-            frame = pd.read_csv(file, index_col=0)
+        if file_name.endswith(".json"):
+            with open(file_name, "r", encoding="utf-8") as read_file:
+                self.constraints = json.loads(read_file.read())
+        elif file_name.endswith(".csv"):
+            frame = pd.read_csv(file_name, index_col=0)
             frame["rules"] = [
                     {k: v for k, v in m.items() if pd.notnull(v)}
                     for m in frame.to_dict(orient='records')
