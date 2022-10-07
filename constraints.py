@@ -1,20 +1,21 @@
 """This module provides the basic objects for the dataframe_validation"""
 
+import json
 from dataclasses import dataclass, field
 import pandas as pd
 import numpy as np
-import json
 
 
 class TypeEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.bool_):
-            return bool(obj)
-        elif isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        return super(TypeEncoder, self).default(obj)
+    """Custom encoder class for json"""
+    def default(self, o):
+        if isinstance(o, np.bool_):
+            return bool(o)
+        elif isinstance(o, np.integer):
+            return int(o)
+        elif isinstance(o, np.floating):
+            return float(o)
+        return super(self).default(o)
 
 
 @dataclass
@@ -102,25 +103,27 @@ class Constraints():
         return self.constraints
 
     def save_as(self, save_as: str):
-        if save_as == 'json':
-            with open("constraints.json", "w") as f:
-                json.dump(self.constraints, f, indent=4, cls=TypeEncoder)
-        elif save_as == 'csv':
-            df = pd.DataFrame(self.constraints).T
-            df.to_csv("constraints.csv")
+        """Save constraints to file."""
+        if save_as.endswith(".json"):
+            with open(save_as, "w", encoding="utf-8") as output:
+                json.dump(self.constraints, output, indent=4, cls=TypeEncoder)
+        elif save_as.endswith(".csv"):
+            frame = pd.DataFrame(self.constraints).T
+            frame.to_csv(save_as)
         else:
             raise ValueError("Save values can be 'json' or 'csv'")
 
     def read_constraints(self, file):
+        """Read constraints from file."""
         if file.endswith(".json"):
-            with open(file, "r") as f:
+            with open(file, "r", encoding="utf-8") as f:
                 self.constraints = json.loads(f.read())
         elif file.endswith(".csv"):
-            df = pd.read_csv(file, index_col=0)
-            df["rules"] = [
+            frame = pd.read_csv(file, index_col=0)
+            frame["rules"] = [
                     {k: v for k, v in m.items() if pd.notnull(v)}
-                    for m in df.to_dict(orient='records')
+                    for m in frame.to_dict(orient='records')
                     ]
-            df.loc[:, ["rules"]].groupby(df.index)
-            self.constraints = df.to_dict()["rules"]
+            frame.loc[:, ["rules"]].groupby(frame.index)
+            self.constraints = frame.to_dict()["rules"]
         return self.constraints
