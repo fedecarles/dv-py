@@ -25,7 +25,6 @@ c1.generate_constraints(d1.data)
 c1.modify_constraint("age", {"unique": True})
 c1 = c1.constraints
 v1 = Verifier(d2.data, c1)
-print(v1.validation_summary)
 
 
 class TestConstraints(unittest.TestCase):

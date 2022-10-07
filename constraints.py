@@ -2,6 +2,19 @@
 
 from dataclasses import dataclass, field
 import pandas as pd
+import numpy as np
+import json
+
+
+class TypeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.bool_):
+            return bool(obj)
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        return super(TypeEncoder, self).default(obj)
 
 
 @dataclass
@@ -86,4 +99,28 @@ class Constraints():
     def modify_constraint(self, column: str,  modify_dict: dict) -> dict:
         """Modify a constrain for a specific column"""
         self.constraints[column].update(modify_dict)
+        return self.constraints
+
+    def save_as(self, save_as: str):
+        if save_as == 'json':
+            with open("constraints.json", "w") as f:
+                json.dump(self.constraints, f, indent=4, cls=TypeEncoder)
+        elif save_as == 'csv':
+            df = pd.DataFrame(self.constraints).T
+            df.to_csv("constraints.csv")
+        else:
+            raise ValueError("Save values can be 'json' or 'csv'")
+
+    def read_constraints(self, file):
+        if file.endswith(".json"):
+            with open(file, "r") as f:
+                self.constraints = json.loads(f.read())
+        elif file.endswith(".csv"):
+            df = pd.read_csv(file, index_col=0)
+            df["rules"] = [
+                    {k: v for k, v in m.items() if pd.notnull(v)}
+                    for m in df.to_dict(orient='records')
+                    ]
+            df.loc[:, ["rules"]].groupby(df.index)
+            self.constraints = df.to_dict()["rules"]
         return self.constraints
