@@ -11,11 +11,11 @@ class TypeEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, np.bool_):
             return bool(o)
-        elif isinstance(o, np.integer):
+        if isinstance(o, np.integer):
             return int(o)
-        elif isinstance(o, np.floating):
+        if isinstance(o, np.floating):
             return float(o)
-        return super(self).default(o)
+        return super(TypeEncoder, self).default(o)
 
 
 @dataclass
@@ -105,8 +105,8 @@ class Constraints():
     def save_as(self, save_as: str):
         """Save constraints to file."""
         if save_as.endswith(".json"):
-            with open(save_as, "w", encoding="utf-8") as output:
-                json.dump(self.constraints, output, indent=4, cls=TypeEncoder)
+            with open(save_as, "w", encoding="utf-8") as file:
+                json.dump(self.constraints, file, indent=4, cls=TypeEncoder)
         elif save_as.endswith(".csv"):
             frame = pd.DataFrame(self.constraints).T
             frame.to_csv(save_as)
@@ -116,8 +116,8 @@ class Constraints():
     def read_constraints(self, file):
         """Read constraints from file."""
         if file.endswith(".json"):
-            with open(file, "r", encoding="utf-8") as f:
-                self.constraints = json.loads(f.read())
+            with open(file, "r", encoding="utf-8") as file:
+                self.constraints = json.loads(file.read())
         elif file.endswith(".csv"):
             frame = pd.read_csv(file, index_col=0)
             frame["rules"] = [
