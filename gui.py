@@ -39,7 +39,7 @@ def validate_data(file_path: str, constraints: Constraints) -> Verifier:
     """
     frame = pd.read_csv(file_path)
     data = DataParser(frame)
-    del (frame)
+    del frame
     v = Verifier(data.data, constraints.constraints)
     return v
 
