@@ -69,7 +69,6 @@ class Constraints():
     def generate_constraints(self, data: pd.DataFrame) -> dict:
         """
         Generate constraints dict
-        
         Parameters:
             data: a pandas DataFrame
         Returns:

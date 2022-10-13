@@ -102,8 +102,8 @@ def modify_constraint(row: pd.DataFrame):
             [sg.Button("Close"), sg.Push(), sg.Button("Submit")]
             ]
     mod_window = sg.Window("Modify Contraint", mod_layout, modal=True)
+    event, values = mod_window.read()
     while True:
-        event, values = mod_window.read()
         if event in (sg.WINDOW_CLOSED, "Close"):
             break
             mod_window.close()
@@ -171,8 +171,9 @@ def update_table(headings: list, constraints: dict) -> pd.DataFrame:
     return t_update
 
 
+event, values = window.read()
+
 while True:
-    event, values = window.read()
     if event in (sg.WINDOW_CLOSED, "Exit"):
         break
     if event == "Generate Constraints":
