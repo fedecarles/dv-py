@@ -103,9 +103,10 @@ def modify_constraint(row: pd.DataFrame):
             ]
     mod_window = sg.Window("Modify Contraint", mod_layout, modal=True)
     while True:
-        mod_event, mod_values = mod_window.read()
-        if event in (sg.WINDOW_CLOSED, "Close"):
+        mod_event = mod_window.read()
+        if mod_event[0] in (sg.WINDOW_CLOSED, "Close"):
             mod_window.close()
+            break
 
 
 HEADINGS = ["attribute", "data_type", "nullable", "unique", "min_length",
@@ -188,4 +189,4 @@ while True:
         t_data_index = values["-C_TABLE-"]
         row_data = update.filter(items=t_data_index, axis=0)
         modify_constraint(row_data)
-        window.close()
+window.close()
