@@ -23,9 +23,9 @@ def generate_constraints(file_path: str) -> Constraints:
     frame = pd.read_csv(file_path)
     data = DataParser(frame)
     del frame
-    const = Constraints()
-    const.generate_constraints(data.data)
-    return const
+    data_constraints = Constraints()
+    data_constraints.generate_constraints(data.data)
+    return data_constraints
 
 
 def validate_data(file_path: str, constraints: Constraints) -> Verifier:
@@ -40,8 +40,8 @@ def validate_data(file_path: str, constraints: Constraints) -> Verifier:
     frame = pd.read_csv(file_path)
     data = DataParser(frame)
     del frame
-    verif = Verifier(data.data, constraints.constraints)
-    return verif
+    verifier = Verifier(data.data, constraints.constraints)
+    return verifier
 
 
 def modify_constraint(row: pd.DataFrame):
@@ -177,17 +177,17 @@ while True:
         break
     if event == "Generate Constraints":
         const = generate_constraints(file_path=values["-IN-"])
-        t_update = update_table(HEADINGS, const.constraints)
-        window["-C_TABLE-"].Update(t_update.values.tolist())
+        update = update_table(HEADINGS, const.constraints)
+        window["-C_TABLE-"].Update(update.values.tolist())
     if event == "Validate Data":
         try:
             valid = validate_data(file_path=values["-IN-"], constraints=const)
-            t_update = update_table(HEADINGS, valid.validation_summary.T)
-            window["-V_TABLE-"].Update(t_update.values.tolist())
+            update = update_table(HEADINGS, valid.validation_summary.T)
+            window["-V_TABLE-"].Update(update.values.tolist())
         except ValueError as v:
             sg.Popup(f"Constraint for {v} but {v} not in data")
     if event == "-C_TABLE-":
         t_data_index = values["-C_TABLE-"]
-        row_data = t_update.filter(items=t_data_index, axis=0)
+        row_data = update.filter(items=t_data_index, axis=0)
         modify_constraint(row_data)
         window.close()
