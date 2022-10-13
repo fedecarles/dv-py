@@ -23,9 +23,9 @@ def generate_constraints(file_path: str) -> Constraints:
     frame = pd.read_csv(file_path)
     data = DataParser(frame)
     del frame
-    c = Constraints()
-    c.generate_constraints(data.data)
-    return c
+    const = Constraints()
+    const.generate_constraints(data.data)
+    return const
 
 
 def validate_data(file_path: str, constraints: Constraints) -> Verifier:
@@ -40,8 +40,8 @@ def validate_data(file_path: str, constraints: Constraints) -> Verifier:
     frame = pd.read_csv(file_path)
     data = DataParser(frame)
     del frame
-    v = Verifier(data.data, constraints.constraints)
-    return v
+    verif = Verifier(data.data, constraints.constraints)
+    return verif
 
 
 def modify_constraint(row: pd.DataFrame):
@@ -102,7 +102,6 @@ def modify_constraint(row: pd.DataFrame):
             [sg.Button("Close"), sg.Push(), sg.Button("Submit")]
             ]
     mod_window = sg.Window("Modify Contraint", mod_layout, modal=True)
-    event, values = mod_window.read()
     while True:
         event, values = mod_window.read()
         if event in (sg.WINDOW_CLOSED, "Close"):
@@ -185,8 +184,8 @@ while True:
             valid = validate_data(file_path=values["-IN-"], constraints=const)
             t_update = update_table(HEADINGS, valid.validation_summary.T)
             window["-V_TABLE-"].Update(t_update.values.tolist())
-        except Exception as e:
-            sg.Popup(f"Constraint for {e} but {e} not in data")
+        except ValueError as v:
+            sg.Popup(f"Constraint for {v} but {v} not in data")
     if event == "-C_TABLE-":
         t_data_index = values["-C_TABLE-"]
         row_data = t_update.filter(items=t_data_index, axis=0)

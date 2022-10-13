@@ -61,7 +61,7 @@ class Verifier():
         self.failed_rows.append(rows)
         return breaks.sum()
 
-    def check_value_range(self, constraint: list[str], col: str) -> int:
+    def check_value_range(self, constraint: list, col: str) -> int:
         """Check range of values against constraint"""
         breaks = ~self.data[col].isin(constraint)
         rows = self.data.loc[breaks].copy()
