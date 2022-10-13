@@ -8,7 +8,7 @@ from verifier import Verifier
 
 
 sg.theme("DarkBlue2")
-sg.set_options(font=("Arial", 14))
+sg.set_options(font=("Arial", 12))
 
 
 def generate_constraints(file_path: str) -> Constraints:
@@ -22,7 +22,7 @@ def generate_constraints(file_path: str) -> Constraints:
     """
     frame = pd.read_csv(file_path)
     data = DataParser(frame)
-    del (frame)
+    del frame
     c = Constraints()
     c.generate_constraints(data.data)
     return c
@@ -31,7 +31,6 @@ def generate_constraints(file_path: str) -> Constraints:
 def validate_data(file_path: str, constraints: Constraints) -> Verifier:
     """
     Validates a dataframe from file
-
     Parameters:
         file_path: a file path string
         constraints: a Constraints object
@@ -41,7 +40,7 @@ def validate_data(file_path: str, constraints: Constraints) -> Verifier:
     frame = pd.read_csv(file_path)
     data = DataParser(frame)
     del (frame)
-    v = Verifier(data.data, c.constraints)
+    v = Verifier(data.data, constraints.constraints)
     return v
 
 
@@ -111,16 +110,14 @@ def modify_constraint(row: pd.DataFrame):
             mod_window.close()
 
 
-headings = ["attribute", "data_type", "nullable", "unique", "min_length",
+HEADINGS = ["attribute", "data_type", "nullable", "unique", "min_length",
             "max_length", "value_range", "min_value", "max_value", "min_date",
             "max_date"]
-c_data = []
-v_data = []
 
 layout1 = [
         [sg.Button("Generate Constraints")],
-        [sg.Table(values=c_data,
-                  headings=headings,
+        [sg.Table(values=[],
+                  headings=HEADINGS,
                   auto_size_columns=False,
                   enable_events=True,
                   key="-C_TABLE-",
@@ -129,8 +126,8 @@ layout1 = [
                   )
          ],
         [sg.Button("Validate Data")],
-        [sg.Table(values=v_data,
-                  headings=headings,
+        [sg.Table(values=[],
+                  headings=HEADINGS,
                   auto_size_columns=False,
                   key="-V_TABLE-",
                   expand_x=True,
@@ -155,26 +152,43 @@ window = sg.Window("Data Validation",
                    size=(1920, 1080),
                    resizable=True)
 
+
+def update_table(headings: list, constraints: dict) -> pd.DataFrame:
+    """
+    Update GUI validation tables
+    Parameters:
+        headings: a list of column names
+        data: a constraints dict
+    Returns:
+        An updated pandas DataFrame
+    """
+    cols = pd.DataFrame(columns=headings)
+    t_data = pd.DataFrame(constraints).T.reset_index()
+    print(t_data)
+    t_data.rename(columns={"index": "attribute"}, inplace=True)
+    t_data.fillna(np.NaN, inplace=True)
+    # t_data = t_data.loc[t_data.sum(axis=1, numeric_only=True) >= 1]
+    t_update = pd.concat([cols, t_data])
+    return t_update
+
+
 while True:
     event, values = window.read()
     if event in (sg.WINDOW_CLOSED, "Exit"):
         break
     if event == "Generate Constraints":
-        c = generate_constraints(file_path=values["-IN-"])
-        c_data = pd.DataFrame(c.constraints).T.reset_index()
-        c_data.rename(columns={"index": "attribute"}, inplace=True)
-        c_data = c_data[headings]
-        window["-C_TABLE-"].Update(c_data.values.tolist())
+        const = generate_constraints(file_path=values["-IN-"])
+        t_update = update_table(HEADINGS, const.constraints)
+        window["-C_TABLE-"].Update(t_update.values.tolist())
     if event == "Validate Data":
-        v = validate_data(file_path=values["-IN-"], constraints=c)
-        v_data = pd.DataFrame(v.validation_summary).reset_index()
-        v_data.rename(columns={"index": "attribute"}, inplace=True)
-        v_data.fillna(np.NaN, inplace=True)
-        v_data = v_data.loc[v_data.sum(axis=1, numeric_only=True) >= 1]
-        v_data = v_data[headings]
-        window["-V_TABLE-"].Update(v_data.values.tolist())
+        try:
+            valid = validate_data(file_path=values["-IN-"], constraints=const)
+            t_update = update_table(HEADINGS, valid.validation_summary.T)
+            window["-V_TABLE-"].Update(t_update.values.tolist())
+        except Exception as e:
+            sg.Popup(f"Constraint for {e} but {e} not in data")
     if event == "-C_TABLE-":
-        c_data_index = values["-C_TABLE-"]
-        row_data = c_data.filter(items=c_data_index, axis=0)
+        t_data_index = values["-C_TABLE-"]
+        row_data = t_update.filter(items=t_data_index, axis=0)
         modify_constraint(row_data)
         window.close()
