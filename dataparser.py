@@ -11,9 +11,8 @@ class DataParser:
     The DataParser class contains functions to optimize and
     prepare a pandas DataFrame
 
-    Attributes
-    -----
-    data: pd.Dataframe
+    Attributes:
+        data: pd.Dataframe
     """
     data: pd.DataFrame()
 
@@ -26,14 +25,10 @@ class DataParser:
         """
         Attempt to guess date columns by name and converts to datetime.
 
-        Params
-        -----
-        data: pd.DataFrame
-
-        Returns
-        -----
-        pd.DataFrame
-            Date columns converted to datetime64
+        Parameters:
+            data: A pandas DataFrame
+        Returns:
+            A pandas DataFrame with date columns as datetime64
         """
         date_cols = self.data.filter(
                 regex='Fecha|date|dt|DT|Date|DATE|maturity|EROD'
@@ -49,14 +44,10 @@ class DataParser:
         """
         Optimizes data types.
 
-        Params
-        -----
-        data: pd.DataFrame
-
-        Returns
-        -----
-        pd.DataFrame
-           Data types downcasted.
+        Parameters:
+            data: A pandas DataFrame
+        Returns:
+            A pandas DataFrame with data types downcasted.
         """
         for col in self.data.columns:
             if issubclass(self.data[col].dtypes.type, np.int_):

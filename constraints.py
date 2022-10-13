@@ -67,7 +67,14 @@ class Constraints():
         return data[colname].max().strftime("%Y-%m-%d")
 
     def generate_constraints(self, data: pd.DataFrame) -> dict:
-        """Generate constraints dict"""
+        """
+        Generate constraints dict
+        
+        Parameters:
+            data: a pandas DataFrame
+        Returns:
+            A dict with constraints
+        """
         all_cols = data.columns
         nr_cols = data.select_dtypes(include=['number']).columns
         cat_cols = data.select_dtypes(include=['category']).columns
@@ -98,12 +105,26 @@ class Constraints():
         return self.constraints
 
     def modify_constraint(self, column: str,  modify_dict: dict) -> dict:
-        """Modify a constrain for a specific column"""
+        """
+        Modify a constrain for a specific column
+        Parameters:
+            column: an str with DataFrame column name
+            modify_dict: a dic with constraint type as key
+            and constrain value as value
+        Returns:
+            A modify dict with updated constraints
+        """
         self.constraints[column].update(modify_dict)
         return self.constraints
 
     def save_as(self, save_as: str):
-        """Save constraints to file."""
+        """
+        Save constraints to file
+        Parameters:
+            save_as: an str with csv or json file name
+        Returns:
+            Saves a csv or json file to local disk
+        """
         if save_as.endswith(".json"):
             with open(save_as, "w", encoding="utf-8") as s_file:
                 json.dump(self.constraints, s_file, indent=4, cls=TypeEncoder)
@@ -113,8 +134,14 @@ class Constraints():
         else:
             raise ValueError("Save values can be 'json' or 'csv'")
 
-    def read_constraints(self, file_name):
-        """Read constraints from file."""
+    def read_constraints(self, file_name: str):
+        """
+        Read constraints from file
+        Parameters:
+            file_name: an str with csv or json file name
+        Returns:
+            A dict with constrains key, values pairs
+        """
         if file_name.endswith(".json"):
             with open(file_name, "r", encoding="utf-8") as read_file:
                 self.constraints = json.loads(read_file.read())

@@ -61,7 +61,7 @@ class Verifier():
         self.failed_rows.append(rows)
         return breaks.sum()
 
-    def check_value_range(self, constraint: str, col: str) -> int:
+    def check_value_range(self, constraint: list[str], col: str) -> int:
         """Check range of values against constraint"""
         breaks = ~self.data[col].isin(constraint)
         rows = self.data.loc[breaks].copy()
@@ -106,14 +106,10 @@ class Verifier():
     def _call_checks(self, check: str) -> dict:
         """
         Map constraint names with functions.
-        Params
-        -----
-        check: str
-
-        Returns
-        -----
-        dict
-            A dictionary of calculated constraints.
+        Parameters:
+            check: a str of check type
+        Returns:
+            A dict of calculated constraints
         """
         checks_dict = {
                 "data_type": self.check_data_type,
@@ -132,14 +128,10 @@ class Verifier():
     def __validate_data(self) -> pd.DataFrame:
         """
         Run all checks for the dataframe
-        Params
-        -----
-        None: Uses object.data and object.constraints
-
-        Returns
-        -----
-        pd.DataFrame
-            A padas DataFrame with number of breaks per column.
+        Parameters:
+            None: Uses object.data and object.constraints
+        Returns:
+            A pandas DataFrame with number of breaks per column
         """
         verification = {}
         for col_index, value in self.constraints.items():
@@ -153,14 +145,10 @@ class Verifier():
     def __get_validation_data(self) -> pd.DataFrame:
         """
         Gets all dataframe rows with validation breaks.
-        Params
-        -----
-        None: Uses object.data and object.constraints
-
-        Returns
-        -----
-        pd.DataFrame
-            A padas DataFrame with rows of validation breaks.
+        Parameters:
+            None: Uses object.data and object.constraints
+        Returns:
+            A pandas DataFrame with rows of validation breaks
         """
         failed_data = pd.concat(self.failed_rows)
         return failed_data
