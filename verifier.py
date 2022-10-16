@@ -140,7 +140,7 @@ class Verifier():
                     (self.constraints[col_index][check_key], col_index)
                     for check_key, check_value in value.items()
                     }
-        return pd.DataFrame(verification).T
+        return pd.DataFrame(verification)
 
     def __get_validation_data(self) -> pd.DataFrame:
         """

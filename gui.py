@@ -49,8 +49,11 @@ def modify_constraint(row: pd.DataFrame):
     Open a GUI window to Modify a single constraint
     Parameters:
         row: a single row pandas DataFrame
+    Returns:
+        A modified constraints dict and table update
     """
     attribute = row["attribute"].values[0]
+    data_type = row["data_type"].values[0]
     nullable = row["nullable"].values[0]
     unique = row["unique"].values[0]
     min_length = row["min_length"].values[0]
@@ -61,50 +64,84 @@ def modify_constraint(row: pd.DataFrame):
     min_date = row["min_date"].values[0]
     max_date = row["max_date"].values[0]
 
+    d_types = ['category', "bool", "float"]
+
     mod_layout = [
             [[sg.Text(f"Attribute: {attribute}")]],
             [
+                [sg.Text("data_type: ", size=(11, 1)),
+                 sg.Combo(d_types, data_type, size=(11, 1), key="data_type")]
+                ],
+            [
                 [sg.Text("nullable: ", size=(11, 1)),
-                 sg.Combo([True, False], nullable, size=(10, 1))]
+                 sg.Combo([True, False], nullable, size=(10, 1),
+                          key="nullable")]
                 ],
             [
                 [sg.Text("unique: ", size=(11, 1)),
-                 sg.Combo([True, False], unique,  size=(10, 1))]
+                 sg.Combo([True, False], unique,  size=(10, 1),
+                          key="unique")]
                 ],
             [
                 [sg.Text("min_length: ", size=(11, 1)),
-                 sg.Input(min_length, size=(11, 1))]
+                 sg.Input(min_length, size=(11, 1), key="min_length")]
                 ],
             [
                 [sg.Text("max_length: ", size=(11, 1)),
-                 sg.Input(max_length, size=(11, 1))]
+                 sg.Input(max_length, size=(11, 1), key="max_length")]
                 ],
             [
                 [sg.Text("value_range: ", size=(11, 1)),
-                 sg.Multiline(value_range, size=(11, 5))]
+                 sg.Multiline(value_range, size=(11, 5), key="value_range")]
                 ],
             [
                 [sg.Text("min_value: ", size=(11, 1)),
-                 sg.Input(min_value, size=(11, 1))]
+                 sg.Input(min_value, size=(11, 1), key="min_value")]
                 ],
             [
                 [sg.Text("max_value: ", size=(11, 1)),
-                 sg.Input(max_value, size=(11, 1))]
+                 sg.Input(max_value, size=(11, 1), key="max_value")]
                 ],
             [
                 [sg.Text("min_date: ", size=(11, 1)),
-                 sg.Input(min_date, size=(11, 1))]
+                 sg.Input(min_date, size=(11, 1), key="min_date")]
                 ],
             [
                 [sg.Text("max_date: ", size=(11, 1)),
-                 sg.Input(max_date, size=(11, 1))]
+                 sg.Input(max_date, size=(11, 1), key="max_date")]
                 ],
             [sg.Button("Close"), sg.Push(), sg.Button("Submit")]
             ]
-    mod_window = sg.Window("Modify Contraint", mod_layout, modal=True)
+    mod_window = sg.Window("Modify Constraint", mod_layout, modal=True)
     while True:
-        mod_event = mod_window.read()
-        if mod_event[0] in (sg.WINDOW_CLOSED, "Close"):
+        mod_event, mod_values = mod_window.read()
+        if mod_event == "Submit":
+            mod = {k: v for k, v in mod_values.items()
+                   if v not in ['nan', 'NaN']}
+            dtype_mapping = {
+                    "data_type": str,
+                    "nullable": bool,
+                    "unique": bool,
+                    "min_length": lambda i: int(float(i)),
+                    "max_length": lambda i: int(float(i)),
+                    "value_range": lambda i: list(
+                        map(
+                            str.strip, i.strip("][").replace("'", "").split(
+                                ","
+                                ))
+                            ),
+                    "min_value": float,
+                    "max_value": float,
+                    "min_date": str,
+                    "max_date": str
+                    }
+            mod = {key: dtype_mapping.get(key)(value)
+                   for key, value in mod.items()}
+            const.modify_constraint(attribute, mod)
+            c_update = update_table(HEADINGS, const.constraints)
+            window["-C_TABLE-"].Update(c_update.values.tolist())
+
+        if mod_event in (sg.WINDOW_CLOSED, "Close"):
             mod_window.close()
             break
 
@@ -152,7 +189,7 @@ window = sg.Window("Data Validation",
                    resizable=True)
 
 
-def update_table(headings: list, constraints: dict) -> pd.DataFrame:
+def update_table(headings: list, data: pd.DataFrame, ) -> pd.DataFrame:
     """
     Update GUI validation tables
     Parameters:
@@ -162,7 +199,7 @@ def update_table(headings: list, constraints: dict) -> pd.DataFrame:
         An updated pandas DataFrame
     """
     cols = pd.DataFrame(columns=headings)
-    t_data = pd.DataFrame(constraints).T.reset_index()
+    t_data = pd.DataFrame(data).T.reset_index()
     t_data.rename(columns={"index": "attribute"}, inplace=True)
     t_data.fillna(np.NaN, inplace=True)
     # t_data = t_data.loc[t_data.sum(axis=1, numeric_only=True) >= 1]
@@ -176,17 +213,18 @@ while True:
         break
     if event == "Generate Constraints":
         const = generate_constraints(file_path=values["-IN-"])
-        update = update_table(HEADINGS, const.constraints)
-        window["-C_TABLE-"].Update(update.values.tolist())
+        c_update = update_table(HEADINGS, const.constraints)
+        window["-C_TABLE-"].Update(c_update.values.tolist())
     if event == "Validate Data":
         try:
             valid = validate_data(file_path=values["-IN-"], constraints=const)
-            update = update_table(HEADINGS, valid.validation_summary.T)
-            window["-V_TABLE-"].Update(update.values.tolist())
+            v_update = update_table(HEADINGS, valid.validation_summary)
+            window["-V_TABLE-"].Update(v_update.values.tolist())
         except ValueError as v:
             sg.Popup(f"Constraint for {v} but {v} not in data")
     if event == "-C_TABLE-":
         t_data_index = values["-C_TABLE-"]
-        row_data = update.filter(items=t_data_index, axis=0)
-        modify_constraint(row_data)
+        if len(t_data_index) > 0:
+            row_data = c_update.filter(items=t_data_index, axis=0)
+            modify_constraint(row_data)
 window.close()
