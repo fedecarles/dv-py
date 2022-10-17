@@ -52,63 +52,60 @@ def modify_constraint(row: pd.DataFrame):
     Returns:
         A modified constraints dict and table update
     """
-    attribute = row["attribute"].values[0]
-    data_type = row["data_type"].values[0]
-    nullable = row["nullable"].values[0]
-    unique = row["unique"].values[0]
-    min_length = row["min_length"].values[0]
-    max_length = row["max_length"].values[0]
-    value_range = row["value_range"].values[0]
-    min_value = row["min_value"].values[0]
-    max_value = row["max_value"].values[0]
-    min_date = row["min_date"].values[0]
-    max_date = row["max_date"].values[0]
-
+    m_vals = row.reset_index().to_dict(orient='records')[0]
     d_types = ['category', "bool", "float"]
 
     mod_layout = [
-            [[sg.Text(f"Attribute: {attribute}")]],
+            [[sg.Text(f"Attribute: {m_vals['attribute']}")]],
             [
                 [sg.Text("data_type: ", size=(11, 1)),
-                 sg.Combo(d_types, data_type, size=(11, 1), key="data_type")]
+                 sg.Combo(d_types, m_vals["data_type"],
+                          size=(10, 1), key="data_type")]
                 ],
             [
                 [sg.Text("nullable: ", size=(11, 1)),
-                 sg.Combo([True, False], nullable, size=(10, 1),
-                          key="nullable")]
+                 sg.Combo([True, False], str(m_vals["nullable"]),
+                          size=(10, 1), key="nullable")]
                 ],
             [
                 [sg.Text("unique: ", size=(11, 1)),
-                 sg.Combo([True, False], unique,  size=(10, 1),
-                          key="unique")]
+                 sg.Combo([True, False], m_vals["unique"],
+                          size=(10, 1), key="unique")]
                 ],
             [
                 [sg.Text("min_length: ", size=(11, 1)),
-                 sg.Input(min_length, size=(11, 1), key="min_length")]
+                 sg.Input(m_vals["min_length"],
+                          size=(11, 1), key="min_length")]
                 ],
             [
                 [sg.Text("max_length: ", size=(11, 1)),
-                 sg.Input(max_length, size=(11, 1), key="max_length")]
+                 sg.Input(m_vals["max_length"],
+                          size=(11, 1), key="max_length")]
                 ],
             [
                 [sg.Text("value_range: ", size=(11, 1)),
-                 sg.Multiline(value_range, size=(11, 5), key="value_range")]
+                 sg.Multiline(m_vals["value_range"],
+                              size=(10, 5), key="value_range")]
                 ],
             [
                 [sg.Text("min_value: ", size=(11, 1)),
-                 sg.Input(min_value, size=(11, 1), key="min_value")]
+                 sg.Input(m_vals["min_value"],
+                          size=(11, 1), key="min_value")]
                 ],
             [
                 [sg.Text("max_value: ", size=(11, 1)),
-                 sg.Input(max_value, size=(11, 1), key="max_value")]
+                 sg.Input(m_vals["max_value"],
+                          size=(11, 1), key="max_value")]
                 ],
             [
                 [sg.Text("min_date: ", size=(11, 1)),
-                 sg.Input(min_date, size=(11, 1), key="min_date")]
+                 sg.Input(m_vals["min_date"],
+                          size=(11, 1), key="min_date")]
                 ],
             [
                 [sg.Text("max_date: ", size=(11, 1)),
-                 sg.Input(max_date, size=(11, 1), key="max_date")]
+                 sg.Input(m_vals["max_date"],
+                          size=(11, 1), key="max_date")]
                 ],
             [sg.Button("Close"), sg.Push(), sg.Button("Submit")]
             ]
@@ -137,9 +134,9 @@ def modify_constraint(row: pd.DataFrame):
                     }
             mod = {key: dtype_mapping.get(key)(value)
                    for key, value in mod.items()}
-            const.modify_constraint(attribute, mod)
-            c_update = update_table(HEADINGS, const.constraints)
-            window["-C_TABLE-"].Update(c_update.values.tolist())
+            const.modify_constraint(m_vals["attribute"], mod)
+            m_update = update_table(HEADINGS, const.constraints)
+            window["-C_TABLE-"].Update(m_update.values.tolist())
 
         if mod_event in (sg.WINDOW_CLOSED, "Close"):
             mod_window.close()
@@ -177,8 +174,8 @@ tabgrp = [
         [sg.Text("Data:"), sg.Input(key="-IN-"),
          sg.FileBrowse(file_types=(("CSV Files", "*.csv*"),))],
         [sg.TabGroup([
-            [sg.Tab("Validation", layout1)],
-            [sg.Tab("Profile", layout2)]
+            [sg.Tab("Standard Constraints", layout1)],
+            [sg.Tab("Custom Constraints", layout2)]
             ], size=(1920, 900))],
         [sg.Exit()]
         ]

@@ -61,16 +61,18 @@ class Constraints():
     def min_date(self, data: pd.DataFrame, colname: str) -> str:
         """Get min value constraint"""
         if data[colname].notnull().any():
-            return data[colname].min().strftime("%Y-%m-%d")
+            val = data[colname].min().strftime("%Y-%m-%d")
         else:
-            return data[colname].min()
+            val = data[colname].min()
+        return val
 
     def max_date(self, data: pd.DataFrame, colname: str) -> str:
         """Get min value constraint"""
         if data[colname].notnull().any():
-            return data[colname].max().strftime("%Y-%m-%d")
+            val = data[colname].max().strftime("%Y-%m-%d")
         else:
-            return data[colname].max()
+            val = data[colname].max()
+        return val
 
     def generate_constraints(self, data: pd.DataFrame) -> dict:
         """
