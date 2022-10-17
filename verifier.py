@@ -16,8 +16,8 @@ class Verifier():
     def __post_init__(self):
         "Post init calculations."
         self.failed_rows = []
-        self.validation_summary: pd.dataframe = self.__validate_data()
-        self.validation_data: pd.dataframe = self.__get_validation_data()
+        self.validation_summary: pd.DataFrame = self.__validate_data()
+        self.validation_data: pd.DataFrame = self.__get_validation_data()
 
     def check_data_type(self, constraint: str, col: str) -> bool:
         """Check data type against constraint"""
@@ -74,6 +74,7 @@ class Verifier():
         breaks = (self.data[col] > constraint)
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"max_value: {col}"
+        self.failed_rows.append(rows)
         return breaks.sum()
 
     def check_min_value(self, constraint: str, col: str):
@@ -81,6 +82,7 @@ class Verifier():
         breaks = (self.data[col] < constraint)
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"max_value: {col}"
+        self.failed_rows.append(rows)
         return breaks.sum()
 
     def check_min_date(self, constraint: str, col: str) -> int:
@@ -91,6 +93,7 @@ class Verifier():
                 )
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"min_date: {col}"
+        self.failed_rows.append(rows)
         return breaks.sum()
 
     def check_max_date(self, constraint: str, col: str) -> int:
@@ -101,6 +104,7 @@ class Verifier():
                 )
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"max_date: {col}"
+        self.failed_rows.append(rows)
         return breaks.sum()
 
     def _call_checks(self, check: str) -> dict:

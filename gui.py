@@ -46,13 +46,13 @@ def validate_data(file_path: str, constraints: Constraints) -> Verifier:
 
 def modify_constraint(row: pd.DataFrame):
     """
-    Open a GUI window to Modify a single constraint
+    Opens a GUI window to Modify a single constraint
     Parameters:
         row: a single row pandas DataFrame
     Returns:
         A modified constraints dict and table update
     """
-    m_vals = row.reset_index().to_dict(orient='records')[0]
+    m_vals = row.to_dict(orient='records')[0]
     d_types = ['category', "bool", "float"]
 
     mod_layout = [
@@ -143,6 +143,33 @@ def modify_constraint(row: pd.DataFrame):
             break
 
 
+def view_validation_data(data: pd.DataFrame):
+    """
+    Opens a GUI window to view the validation break records
+    Parameters:
+        row: a Verifier.validation_data DataFrame
+    Returns:
+        A GUI window with table display of breaks
+    """
+    b_layout = [
+            [[sg.Table(values=data.values.tolist(),
+                       headings=data.columns.tolist(),
+                       auto_size_columns=False,
+                       key="-B_TABLE-",
+                       expand_x=True,
+                       num_rows=20
+                       )
+              ]],
+            [[sg.Button("Close")]]
+            ]
+    b_window = sg.Window("Modify Constraint", b_layout, modal=True)
+    while True:
+        b_event, b_values = b_window.read()
+        if b_event in (sg.WINDOW_CLOSED, "Close"):
+            b_window.close()
+            break
+
+
 HEADINGS = ["attribute", "data_type", "nullable", "unique", "min_length",
             "max_length", "value_range", "min_value", "max_value", "min_date",
             "max_date"]
@@ -162,6 +189,7 @@ layout1 = [
         [sg.Table(values=[],
                   headings=HEADINGS,
                   auto_size_columns=False,
+                  enable_events=True,
                   key="-V_TABLE-",
                   expand_x=True,
                   num_rows=20
@@ -216,6 +244,9 @@ while True:
         try:
             valid = validate_data(file_path=values["-IN-"], constraints=const)
             v_update = update_table(HEADINGS, valid.validation_summary)
+            # v_update = v_update.loc[
+            #         v_update.sum(axis=1, numeric_only=True) >= 1
+            #         ]
             window["-V_TABLE-"].Update(v_update.values.tolist())
         except ValueError as v:
             sg.Popup(f"Constraint for {v} but {v} not in data")
@@ -224,4 +255,14 @@ while True:
         if len(t_data_index) > 0:
             row_data = c_update.filter(items=t_data_index, axis=0)
             modify_constraint(row_data)
+    if event == "-V_TABLE-":
+        t_data_index = values["-V_TABLE-"]
+        row_data = v_update.filter(items=t_data_index, axis=0)
+        row_data = row_data.to_dict(orient='records')[0]
+        validation_data = valid.validation_data[
+                valid.validation_data["Validation"].str.contains(
+                    row_data["attribute"]
+                    )
+                ]
+        view_validation_data(validation_data)
 window.close()
