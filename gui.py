@@ -176,7 +176,9 @@ HEADINGS = ["attribute", "data_type", "nullable", "unique", "min_length",
             "max_date"]
 
 layout1 = [
-        [sg.Button("Generate Constraints")],
+        [sg.Button("Generate Constraints"),
+         sg.Input(visible=False, enable_events=True, key="-SAVE_C_AS-"),
+         sg.FileSaveAs("Download Constraints")],
         [sg.Table(values=[],
                   headings=HEADINGS,
                   auto_size_columns=False,
@@ -240,6 +242,8 @@ while True:
         const = generate_constraints(file_path=values["-IN-"])
         c_update = update_table(HEADINGS, const.constraints)
         window["-C_TABLE-"].Update(c_update.values.tolist())
+    if event == "-SAVE_C_AS-":
+        const.save_as(values["-SAVE_C_AS-"])
     if event == "Validate Data":
         try:
             valid = validate_data(file_path=values["-IN-"], constraints=const)
