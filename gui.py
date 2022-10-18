@@ -156,13 +156,14 @@ def view_validation_data(data: pd.DataFrame):
                        headings=data.columns.tolist(),
                        auto_size_columns=False,
                        key="-B_TABLE-",
-                       expand_x=True,
+                       vertical_scroll_only=False,
                        num_rows=20
                        )
               ]],
             [[sg.Button("Close")]]
             ]
-    b_window = sg.Window("Modify Constraint", b_layout, modal=True)
+    b_window = sg.Window("Modify Constraint", b_layout, modal=True,
+                         size=(1920, 500))
     while True:
         b_event, b_values = b_window.read()
         if b_event in (sg.WINDOW_CLOSED, "Close"):
@@ -227,7 +228,6 @@ def update_table(headings: list, data: pd.DataFrame, ) -> pd.DataFrame:
     t_data = pd.DataFrame(data).T.reset_index()
     t_data.rename(columns={"index": "attribute"}, inplace=True)
     t_data.fillna(np.NaN, inplace=True)
-    # t_data = t_data.loc[t_data.sum(axis=1, numeric_only=True) >= 1]
     t_update = pd.concat([cols, t_data])
     return t_update
 
@@ -258,11 +258,12 @@ while True:
     if event == "-V_TABLE-":
         t_data_index = values["-V_TABLE-"]
         row_data = v_update.filter(items=t_data_index, axis=0)
-        row_data = row_data.to_dict(orient='records')[0]
-        validation_data = valid.validation_data[
-                valid.validation_data["Validation"].str.contains(
-                    row_data["attribute"]
-                    )
-                ]
-        view_validation_data(validation_data)
+        if len(row_data) > 0:
+            row_data = row_data.to_dict(orient='records')[0]
+            validation_data = valid.validation_data[
+                    valid.validation_data["Validation"].str.contains(
+                        row_data["attribute"]
+                        )
+                    ]
+            view_validation_data(validation_data)
 window.close()
