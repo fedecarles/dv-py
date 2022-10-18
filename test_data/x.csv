@@ -1,0 +1,13 @@
+,data_type,nullable,unique,min_length,max_length,value_range,min_value,max_value,min_date,max_date
+gender,False,0,0,1,0,1,,,,
+age,False,5,,,,,0,0,,
+hypertension,True,0,,,,,0,1,,
+heart_disease,True,0,,,,,0,0,,
+ever_married,False,0,0,0,0,0,,,,
+work_type,False,0,0,0,0,3,,,,
+Residence_type,False,1,0,0,2,3,,,,
+avg_glucose_level,False,0,,,,,1,1,,
+bmi,False,1,,,,,1,1,,
+smoking_status,False,0,0,0,0,2,,,,
+stroke,False,0,,,,,,,,
+date,False,0,,,,,,,1,9

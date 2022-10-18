@@ -188,7 +188,10 @@ layout1 = [
                   num_rows=20
                   )
          ],
-        [sg.Button("Validate Data")],
+        [sg.Button("Validate Data"),
+         sg.Input(visible=False, enable_events=True, key="-SAVE_V_AS-"),
+         sg.FileSaveAs("Download Summary"),
+         ],
         [sg.Table(values=[],
                   headings=HEADINGS,
                   auto_size_columns=False,
@@ -254,6 +257,8 @@ while True:
             window["-V_TABLE-"].Update(v_update.values.tolist())
         except ValueError as v:
             sg.Popup(f"Constraint for {v} but {v} not in data")
+    if event == "-SAVE_V_AS-":
+        valid.validation_summary.T.to_csv(values["-SAVE_V_AS-"])
     if event == "-C_TABLE-":
         t_data_index = values["-C_TABLE-"]
         if len(t_data_index) > 0:
