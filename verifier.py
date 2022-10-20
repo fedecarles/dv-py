@@ -53,6 +53,7 @@ class Verifier():
             rows["Validation"] = f"max_length: {col}"
             self.failed_rows.append(rows)
             return breaks.sum()
+        return None
 
     def check_min_length(self, constraint: str, col: str) -> int:
         """Check min length against constraint"""
@@ -62,6 +63,7 @@ class Verifier():
             rows["Validation"] = f"min_legth:{col}"
             self.failed_rows.append(rows)
             return breaks.sum()
+        return None
 
     def check_value_range(self, constraint: list, col: str) -> int:
         """Check range of values against constraint"""

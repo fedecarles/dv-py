@@ -28,9 +28,8 @@ def generate_constraints(file_path: str) -> Constraints:
         data_constraints = Constraints()
         data_constraints.generate_constraints(data.data)
         return data_constraints
-    else:
-        sg.PopupError("File Path does not exists")
-        return Constraints()  # return empty constraints
+    sg.PopupError("File Path does not exists")
+    return Constraints()  # return empty constraints
 
 
 def validate_data(file_path: str, constraints: Constraints) -> Verifier:
@@ -48,9 +47,8 @@ def validate_data(file_path: str, constraints: Constraints) -> Verifier:
         del frame
         verifier = Verifier(data.data, constraints.constraints)
         return verifier
-    else:
-        sg.PopupError("File Path does not exists")
-        return Verifier([], {})  # return empty verifier
+    sg.PopupError("File Path does not exists")
+    return Verifier([], {})  # return empty verifier
 
 
 def modify_constraint(row: pd.DataFrame):
