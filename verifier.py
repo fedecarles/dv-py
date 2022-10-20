@@ -64,7 +64,7 @@ class Verifier():
     def check_value_range(self, constraint: list, col: str) -> int:
         """Check range of values against constraint"""
         breaks = (self.data[col].notnull()) &\
-                 (~self.data[col].isin("constraint"))
+                 (~self.data[col].isin(constraint))
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"value_range: {col}"
         self.failed_rows.append(rows)
