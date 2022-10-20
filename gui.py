@@ -1,4 +1,5 @@
 """ GUI interface for DataFrame validation """
+from pathlib import Path
 import PySimpleGUI as sg
 import pandas as pd
 import numpy as np
@@ -20,12 +21,16 @@ def generate_constraints(file_path: str) -> Constraints:
     Returns:
         A Constraints object
     """
-    frame = pd.read_csv(file_path)
-    data = DataParser(frame)
-    del frame
-    data_constraints = Constraints()
-    data_constraints.generate_constraints(data.data)
-    return data_constraints
+    if Path(file_path).exists():
+        frame = pd.read_csv(file_path)
+        data = DataParser(frame)
+        del frame
+        data_constraints = Constraints()
+        data_constraints.generate_constraints(data.data)
+        return data_constraints
+    else:
+        sg.PopupError("File Path does not exists")
+        return Constraints()  # return empty constraints
 
 
 def validate_data(file_path: str, constraints: Constraints) -> Verifier:
@@ -37,11 +42,15 @@ def validate_data(file_path: str, constraints: Constraints) -> Verifier:
     Returns:
         A Verifier object
     """
-    frame = pd.read_csv(file_path)
-    data = DataParser(frame)
-    del frame
-    verifier = Verifier(data.data, constraints.constraints)
-    return verifier
+    if Path(file_path).exists():
+        frame = pd.read_csv(file_path)
+        data = DataParser(frame)
+        del frame
+        verifier = Verifier(data.data, constraints.constraints)
+        return verifier
+    else:
+        sg.PopupError("File Path does not exists")
+        return Verifier([], {})  # return empty verifier
 
 
 def modify_constraint(row: pd.DataFrame):
@@ -243,21 +252,29 @@ while True:
     if event in (sg.WINDOW_CLOSED, "Exit"):
         break
     if event == "Generate Constraints":
-        const = generate_constraints(file_path=values["-IN-"])
-        c_update = update_table(HEADINGS, const.constraints)
-        window["-C_TABLE-"].Update(c_update.values.tolist())
+        if values["-IN-"] != "":
+            const = generate_constraints(file_path=values["-IN-"])
+            c_update = update_table(HEADINGS, const.constraints)
+            window["-C_TABLE-"].Update(c_update.values.tolist())
+        else:
+            sg.PopupError("Provide a file to generate constraints")
     if event == "-SAVE_C_AS-":
         const.save_as(values["-SAVE_C_AS-"])
     if event == "Validate Data":
-        try:
-            valid = validate_data(file_path=values["-IN-"], constraints=const)
-            v_update = update_table(HEADINGS, valid.validation_summary)
-            # v_update = v_update.loc[
-            #         v_update.sum(axis=1, numeric_only=True) >= 1
-            #         ]
-            window["-V_TABLE-"].Update(v_update.values.tolist())
-        except ValueError as v:
-            sg.Popup(f"Constraint for {v} but {v} not in data")
+        if values["-IN-"] != "":
+            try:
+                valid = validate_data(
+                        file_path=values["-IN-"], constraints=const
+                        )
+                v_update = update_table(HEADINGS, valid.validation_summary)
+                # v_update = v_update.loc[
+                #         v_update.sum(axis=1, numeric_only=True) >= 1
+                #         ]
+                window["-V_TABLE-"].Update(v_update.values.tolist())
+            except ValueError as v:
+                sg.Popup(f"Constraint for {v} but {v} not in data")
+        else:
+            sg.PopupError("Provide a file to validate")
     if event == "-SAVE_V_AS-":
         valid.validation_summary.T.to_csv(values["-SAVE_V_AS-"])
     if event == "-C_TABLE-":
