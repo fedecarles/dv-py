@@ -47,19 +47,21 @@ class Verifier():
 
     def check_max_length(self, constraint: str, col: str) -> int:
         """Check max length against constraint"""
-        breaks = (self.data[col].str.len() > constraint)
-        rows = self.data.loc[breaks].copy()
-        rows["Validation"] = f"max_length: {col}"
-        self.failed_rows.append(rows)
-        return breaks.sum()
+        if self.data[col].dtype == 'category':
+            breaks = (self.data[col].str.len() > constraint)
+            rows = self.data.loc[breaks].copy()
+            rows["Validation"] = f"max_length: {col}"
+            self.failed_rows.append(rows)
+            return breaks.sum()
 
     def check_min_length(self, constraint: str, col: str) -> int:
         """Check min length against constraint"""
-        breaks = (self.data[col].str.len() < constraint)
-        rows = self.data.loc[breaks].copy()
-        rows["Validation"] = f"min_legth:{col}"
-        self.failed_rows.append(rows)
-        return breaks.sum()
+        if self.data[col].dtype == 'category':
+            breaks = (self.data[col].str.len() < constraint)
+            rows = self.data.loc[breaks].copy()
+            rows["Validation"] = f"min_legth:{col}"
+            self.failed_rows.append(rows)
+            return breaks.sum()
 
     def check_value_range(self, constraint: list, col: str) -> int:
         """Check range of values against constraint"""
@@ -100,10 +102,10 @@ class Verifier():
 
     def check_max_date(self, constraint: str, col: str) -> int:
         """Check max date against constraint"""
-        breaks = (
-                pd.to_datetime(self.data[col],
-                    infer_datetime_format=True) > pd.to_datetime(constraint)
-                )
+        breaks = (pd.to_datetime(self.data[col],
+                                 infer_datetime_format=True) >
+                  pd.to_datetime(constraint)
+                  )
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"max_date: {col}"
         self.failed_rows.append(rows)
