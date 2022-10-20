@@ -162,8 +162,9 @@ def view_validation_data(data: pd.DataFrame):
               ]],
             [[sg.Button("Close")]]
             ]
+    win_width = min(1920, 50*(len(data.columns)))
     b_window = sg.Window("Modify Constraint", b_layout, modal=True,
-                         size=(1920, 500))
+                         size=(win_width, 500))
     while True:
         b_event, b_values = b_window.read()
         if b_event in (sg.WINDOW_CLOSED, "Close"):
