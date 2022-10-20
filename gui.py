@@ -169,21 +169,29 @@ def view_validation_data(data: pd.DataFrame):
                        num_rows=20
                        )
               ]],
-            [[sg.Button("Close")]]
+            [[sg.Button("Close"), sg.Input(
+                visible=False, enable_events=True, key="-SAVE_B_AS-"),
+                sg.FileSaveAs("Download")
+              ]]
             ]
     win_width = min(1920, 50*(len(data.columns)))
-    b_window = sg.Window("Modify Constraint", b_layout, modal=True,
+    b_window = sg.Window("Modify Constraint",
+                         b_layout, modal=True,
                          size=(win_width, 500))
     while True:
         b_event, b_values = b_window.read()
         if b_event in (sg.WINDOW_CLOSED, "Close"):
             b_window.close()
             break
+        if b_event == "-SAVE_B_AS-":
+            data.to_csv(b_values["-SAVE_B_AS-"])
 
 
-HEADINGS = ["attribute", "data_type", "nullable", "unique", "min_length",
-            "max_length", "value_range", "min_value", "max_value", "min_date",
-            "max_date"]
+HEADINGS = [
+        "attribute", "data_type", "nullable", "unique", "min_length",
+        "max_length", "value_range", "min_value", "max_value", "min_date",
+        "max_date"
+        ]
 
 layout1 = [
         [sg.Button("Generate Constraints"),
