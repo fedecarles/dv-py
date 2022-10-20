@@ -63,7 +63,8 @@ class Verifier():
 
     def check_value_range(self, constraint: list, col: str) -> int:
         """Check range of values against constraint"""
-        breaks = ~self.data[col].isin(constraint)
+        breaks = (self.data[col].notnull()) &\
+                 (~self.data[col].isin("constraint"))
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"value_range: {col}"
         self.failed_rows.append(rows)
@@ -88,7 +89,8 @@ class Verifier():
     def check_min_date(self, constraint: str, col: str) -> int:
         """Check min date against constraint"""
         breaks = (
-                pd.to_datetime(self.data[col],
+                pd.to_datetime(
+                    self.data[col],
                     infer_datetime_format=True) < pd.to_datetime(constraint)
                 )
         rows = self.data.loc[breaks].copy()
