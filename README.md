@@ -20,5 +20,5 @@ based on pre-define rules. The rules include:
 ## To-do
 
 * [ ] Add **Load Constraints** functionality.
+* [ ] Add **Progress bars**.
 * [ ] Add **Data Profile** section.
-
