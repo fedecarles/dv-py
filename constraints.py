@@ -15,6 +15,9 @@ class TypeEncoder(json.JSONEncoder):
             return int(o)
         if isinstance(o, np.floating):
             return float(o)
+        if isinstance(o, set):
+            return list(o)
+
         return super().default(o)
 
 
@@ -46,9 +49,9 @@ class Constraints():
         """Get min length constraint"""
         return min(data[colname].map(str).map(len))
 
-    def value_range(self, data: pd.DataFrame, colname: str) -> list:
+    def value_range(self, data: pd.DataFrame, colname: str) -> set:
         """Get range of values constraint"""
-        return data[colname].unique().categories.to_list()
+        return set(data[colname])
 
     def min_value(self, data: pd.DataFrame, colname: str) -> float:
         """Get min value constraint"""

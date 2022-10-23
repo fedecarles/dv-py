@@ -172,7 +172,7 @@ def view_validation_data(data: pd.DataFrame):
                 sg.FileSaveAs("Download")
               ]]
             ]
-    win_width = min(1920, 50*(len(data.columns)))
+    win_width = min(1920, 80*(len(data.columns)))
     b_window = sg.Window("Modify Constraint",
                          b_layout, modal=True,
                          size=(win_width, 500))
@@ -194,7 +194,9 @@ HEADINGS = [
 layout1 = [
         [sg.Button("Generate Constraints"),
          sg.Input(visible=False, enable_events=True, key="-SAVE_C_AS-"),
-         sg.FileSaveAs("Download Constraints")],
+         sg.FileSaveAs("Download Constraints"),
+         sg.Input(visible=False, enable_events=True, key="-READ_C-"),
+         sg.FileBrowse("Load Constraints")],
         [sg.Table(values=[],
                   headings=HEADINGS,
                   auto_size_columns=False,
@@ -266,6 +268,11 @@ while True:
             sg.PopupError("Provide a file to generate constraints")
     if event == "-SAVE_C_AS-":
         const.save_as(values["-SAVE_C_AS-"])
+    if event == "-READ_C-":
+        const = Constraints()
+        const.read_constraints(values["-READ_C-"])
+        c_update = update_table(HEADINGS, const.constraints)
+        window["-C_TABLE-"].Update(c_update.values.tolist())
     if event == "Validate Data":
         if values["-IN-"] != "":
             try:
@@ -277,7 +284,7 @@ while True:
                 #         v_update.sum(axis=1, numeric_only=True) >= 1
                 #         ]
                 window["-V_TABLE-"].Update(v_update.values.tolist())
-            except ValueError as v:
+            except KeyError as v:
                 sg.Popup(f"Constraint for {v} but {v} not in data")
         else:
             sg.PopupError("Provide a file to validate")
