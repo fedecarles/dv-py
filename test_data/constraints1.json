@@ -6,8 +6,8 @@
         "min_length": 4,
         "max_length": 6,
         "value_range": [
-            "Male",
-            "Female"
+            "Female",
+            "Male"
         ]
     },
     "age": {
@@ -47,10 +47,10 @@
         "max_length": 13.0,
         "value_range": [
             "Govt_job",
-            "children",
-            "Private",
             NaN,
-            "Self-employed"
+            "Self-employed",
+            "children",
+            "Private"
         ]
     },
     "Residence_type": {
@@ -83,10 +83,10 @@
         "min_length": 6,
         "max_length": 15,
         "value_range": [
+            "Unknown",
             "never smoked",
             "smokes",
-            "formerly smoked",
-            "Unknown"
+            "formerly smoked"
         ]
     },
     "stroke": {

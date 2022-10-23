@@ -12,45 +12,6 @@ sg.theme("DarkBlue2")
 sg.set_options(font=("Arial", 12))
 
 
-def generate_constraints(file_path: str) -> Constraints:
-    """
-    Generate constraints from file
-
-    Parameters:
-        file_path: a file path string
-    Returns:
-        A Constraints object
-    """
-    if Path(file_path).exists():
-        frame = pd.read_csv(file_path)
-        data = DataParser(frame)
-        del frame
-        data_constraints = Constraints()
-        data_constraints.generate_constraints(data.data)
-        return data_constraints
-    sg.PopupError("File Path does not exists")
-    return Constraints()  # return empty constraints
-
-
-def validate_data(file_path: str, constraints: Constraints) -> Verifier:
-    """
-    Validates a dataframe from file
-    Parameters:
-        file_path: a file path string
-        constraints: a Constraints object
-    Returns:
-        A Verifier object
-    """
-    if Path(file_path).exists():
-        frame = pd.read_csv(file_path)
-        data = DataParser(frame)
-        del frame
-        verifier = Verifier(data.data, constraints.constraints)
-        return verifier
-    sg.PopupError("File Path does not exists")
-    return Verifier([], {})  # return empty verifier
-
-
 def modify_constraint(row: pd.DataFrame):
     """
     Opens a GUI window to Modify a single constraint
@@ -169,7 +130,7 @@ def view_validation_data(data: pd.DataFrame):
               ]],
             [[sg.Button("Close"), sg.Input(
                 visible=False, enable_events=True, key="-SAVE_B_AS-"),
-                sg.FileSaveAs("Download")
+                sg.FileSaveAs("Save")
               ]]
             ]
     win_width = min(1920, 80*(len(data.columns)))
@@ -194,7 +155,7 @@ HEADINGS = [
 layout1 = [
         [sg.Button("Generate Constraints"),
          sg.Input(visible=False, enable_events=True, key="-SAVE_C_AS-"),
-         sg.FileSaveAs("Download Constraints"),
+         sg.FileSaveAs("Save Constraints"),
          sg.Input(visible=False, enable_events=True, key="-READ_C-"),
          sg.FileBrowse("Load Constraints")],
         [sg.Table(values=[],
@@ -208,7 +169,7 @@ layout1 = [
          ],
         [sg.Button("Validate Data"),
          sg.Input(visible=False, enable_events=True, key="-SAVE_V_AS-"),
-         sg.FileSaveAs("Download Summary"),
+         sg.FileSaveAs("Save Summary"),
          ],
         [sg.Table(values=[],
                   headings=HEADINGS,
@@ -217,14 +178,14 @@ layout1 = [
                   key="-V_TABLE-",
                   expand_x=True,
                   num_rows=20
-                  )
-         ],
-            ]
+                  )],
+        [sg.ProgressBar(1, orientation="h", size=(20, 20), key="-PROG-")]
+        ]
 layout2 = []
 
 tabgrp = [
-        [sg.Text("Data:"), sg.Input(key="-IN-"),
-         sg.FileBrowse(file_types=(("CSV Files", "*.csv*"),))],
+        [sg.Text("Data:"), sg.Input(enable_events=True, key="-IN-"),
+         sg.FileBrowse("Data", file_types=(("CSV Files", "*.csv*"),))],
         [sg.TabGroup([
             [sg.Tab("Standard Constraints", layout1)],
             [sg.Tab("Custom Constraints", layout2)]
@@ -259,26 +220,22 @@ while True:
     event, values = window.read()
     if event in (sg.WINDOW_CLOSED, "Exit"):
         break
-    if event == "Generate Constraints":
-        if values["-IN-"] != "":
-            const = generate_constraints(file_path=values["-IN-"])
+    if event == "-IN-":
+        if Path(values["-IN-"]).exists():
+            df = pd.read_csv(values["-IN-"])
+            parsed_data = DataParser(df)
+            del df
+        else:
+            sg.PopupError("File Path does not exists")
+    if "parsed_data" in locals():
+        if event == "Generate Constraints":
+            const = Constraints()
+            const.generate_constraints(parsed_data.data)
             c_update = update_table(HEADINGS, const.constraints)
             window["-C_TABLE-"].Update(c_update.values.tolist())
-        else:
-            sg.PopupError("Provide a file to generate constraints")
-    if event == "-SAVE_C_AS-":
-        const.save_as(values["-SAVE_C_AS-"])
-    if event == "-READ_C-":
-        const = Constraints()
-        const.read_constraints(values["-READ_C-"])
-        c_update = update_table(HEADINGS, const.constraints)
-        window["-C_TABLE-"].Update(c_update.values.tolist())
-    if event == "Validate Data":
-        if values["-IN-"] != "":
+        if event == "Validate Data":
             try:
-                valid = validate_data(
-                        file_path=values["-IN-"], constraints=const
-                        )
+                valid = Verifier(parsed_data.data, const.constraints)
                 v_update = update_table(HEADINGS, valid.validation_summary)
                 # v_update = v_update.loc[
                 #         v_update.sum(axis=1, numeric_only=True) >= 1
@@ -286,8 +243,16 @@ while True:
                 window["-V_TABLE-"].Update(v_update.values.tolist())
             except KeyError as v:
                 sg.Popup(f"Constraint for {v} but {v} not in data")
-        else:
-            sg.PopupError("Provide a file to validate")
+    else:
+        sg.PopupError("No Data is loaded")
+    if event == "-SAVE_C_AS-":
+        const.save_as(values["-SAVE_C_AS-"])
+    if event == "-READ_C-":
+        const = Constraints()
+        const.read_constraints(values["-READ_C-"])
+        print(const.constraints)
+        c_update = update_table(HEADINGS, const.constraints)
+        window["-C_TABLE-"].Update(c_update.values.tolist())
     if event == "-SAVE_V_AS-":
         valid.validation_summary.T.to_csv(values["-SAVE_V_AS-"])
     if event == "-C_TABLE-":
