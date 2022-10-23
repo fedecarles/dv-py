@@ -1,13 +1,13 @@
 ,data_type,nullable,unique,min_length,max_length,value_range,min_value,max_value,min_date,max_date
-gender,category,False,False,4,6,"{'Male', 'Female'}",,,,
+gender,category,False,False,4,6,"{'Female', 'Male'}",,,,
 age,float32,False,,,,,0.08,82.0,,
 hypertension,float32,False,,,,,0.0,1.0,,
 heart_disease,float32,False,,,,,0.0,1.0,,
 ever_married,category,False,False,2,3,"{'Yes', 'No'}",,,,
-work_type,category,True,False,7.0,13.0,"{'children', 'Self-employed', 'Private', 'Govt_job', nan}",,,,
-Residence_type,category,False,False,5,5,"{'Rural', 'Urban'}",,,,
+work_type,category,True,False,7.0,13.0,"{'Self-employed', 'Private', 'Govt_job', 'children', nan}",,,,
+Residence_type,category,False,False,5,5,"{'Urban', 'Rural'}",,,,
 avg_glucose_level,float32,False,,,,,55.12,271.74,,
 bmi,float32,False,,,,,14.0,48.9,,
-smoking_status,category,False,False,6,15,"{'never smoked', 'formerly smoked', 'Unknown', 'smokes'}",,,,
+smoking_status,category,False,False,6,15,"{'formerly smoked', 'never smoked', 'Unknown', 'smokes'}",,,,
 stroke,bool,False,,,,,,,,
 date,datetime64[ns],False,,,,,,,2021-12-31,2022-06-30

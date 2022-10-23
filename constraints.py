@@ -2,6 +2,7 @@
 
 import json
 from dataclasses import dataclass, field
+from ast import literal_eval
 import pandas as pd
 import numpy as np
 
@@ -162,5 +163,18 @@ class Constraints():
                     for m in frame.to_dict(orient='records')
                     ]
             frame.loc[:, ["rules"]].groupby(frame.index)
-            self.constraints = frame.to_dict()["rules"]
+            frame = frame.to_dict()["rules"]
+
+            # loop for value_range to read set as literal
+            for key, val in frame.items():
+                for ix, vl in val.items():
+                    if ix == "value_range":
+                        range_values = val["value_range"].replace(
+                                "\'", "\"").replace("nan", "'nan'")
+                        val["value_range"] = literal_eval(
+                                literal_eval(
+                                    json.dumps(range_values)
+                                    )
+                                )
+            self.constraints = frame
         return self.constraints

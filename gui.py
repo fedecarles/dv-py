@@ -250,7 +250,6 @@ while True:
     if event == "-READ_C-":
         const = Constraints()
         const.read_constraints(values["-READ_C-"])
-        print(const.constraints)
         c_update = update_table(HEADINGS, const.constraints)
         window["-C_TABLE-"].Update(c_update.values.tolist())
     if event == "-SAVE_V_AS-":
