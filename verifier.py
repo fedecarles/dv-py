@@ -10,13 +10,13 @@ class Verifier():
     The DataVerifier class provides a way to verify constraints on a
     dataframe.
     """
-    data: pd.DataFrame()
+    data: pd.DataFrame
     constraints: dict
 
     def __post_init__(self):
         "Post init calculations."
         self.failed_rows = []
-        self.validation_summary: pd.DataFrame = self.__validate_data()
+        self.validation_summary = self.__validate_data()
         self.validation_data: pd.DataFrame = self.__get_validation_data()
 
     def check_data_type(self, constraint: str, col: str) -> bool:
@@ -151,6 +151,7 @@ class Verifier():
                     for check_key, check_value in value.items()
                     }
         return pd.DataFrame(verification)
+
 
     def __get_validation_data(self) -> pd.DataFrame:
         """

@@ -130,7 +130,7 @@ def view_validation_data(data: pd.DataFrame):
               ]],
             [[sg.Button("Close"), sg.Input(
                 visible=False, enable_events=True, key="-SAVE_B_AS-"),
-                sg.FileSaveAs("Save")
+                sg.FileSaveAs("Save", file_types=(("CSV Files", "*.csv*")))
               ]]
             ]
     win_width = min(1920, 80*(len(data.columns)))
@@ -169,7 +169,7 @@ layout1 = [
          ],
         [sg.Button("Validate Data"),
          sg.Input(visible=False, enable_events=True, key="-SAVE_V_AS-"),
-         sg.FileSaveAs("Save Summary"),
+         sg.FileSaveAs("Save Summary", file_types=(("CSV Files", "*.csv*"))),
          ],
         [sg.Table(values=[],
                   headings=HEADINGS,
@@ -179,13 +179,14 @@ layout1 = [
                   expand_x=True,
                   num_rows=20
                   )],
-        [sg.ProgressBar(1, orientation="h", size=(20, 20), key="-PROG-")]
+        [sg.Text("Progress: "), sg.ProgressBar(max_value=100, orientation="h",
+                                     size=(20, 20), key="-PROG-")]
         ]
 layout2 = []
 
 tabgrp = [
-        [sg.Text("Data:"), sg.Input(enable_events=True, key="-IN-"),
-         sg.FileBrowse("Data", file_types=(("CSV Files", "*.csv*"),))],
+        [sg.Text(), sg.Input(enable_events=True, key="-IN-"),
+         sg.FileBrowse(file_types=(("CSV Files", "*.csv*"),))],
         [sg.TabGroup([
             [sg.Tab("Standard Constraints", layout1)],
             [sg.Tab("Custom Constraints", layout2)]
@@ -216,6 +217,35 @@ def update_table(headings: list, data: pd.DataFrame, ) -> pd.DataFrame:
     return t_update
 
 
+class VerifierProgress(Verifier):
+    """Add progress var functionality"""
+
+    data: pd.DataFrame
+    constraints: dict
+
+    def __init__(self, data, constraints):
+        super().__init__(data, constraints)
+        self.validation_summary = self.__validate_data()
+
+    def __validate_data(self) -> pd.DataFrame:
+        """
+        Override method to add gui progress bar
+        """
+        verification = {}
+        progress = 0
+        nr_cols = len(self.data.columns)
+        for col_index, value in self.constraints.items():
+            progress += 100 / nr_cols
+            window["-PROG-"].Update(progress)
+            verification[col_index] = {
+                    check_key: self._call_checks(check_key)
+                    (self.constraints[col_index][check_key], col_index)
+                    for check_key, check_value in value.items()
+                    }
+        return pd.DataFrame(verification)
+
+
+# Main loop
 while True:
     event, values = window.read()
     if event in (sg.WINDOW_CLOSED, "Exit"):
@@ -235,11 +265,11 @@ while True:
             window["-C_TABLE-"].Update(c_update.values.tolist())
         if event == "Validate Data":
             try:
-                valid = Verifier(parsed_data.data, const.constraints)
+                valid = VerifierProgress(parsed_data.data, const.constraints)
                 v_update = update_table(HEADINGS, valid.validation_summary)
-                # v_update = v_update.loc[
-                #         v_update.sum(axis=1, numeric_only=True) >= 1
-                #         ]
+                v_update = v_update.loc[
+                        v_update.sum(axis=1, numeric_only=True) >= 1
+                        ].reset_index(drop=True)
                 window["-V_TABLE-"].Update(v_update.values.tolist())
             except KeyError as v:
                 sg.Popup(f"Constraint for {v} but {v} not in data")
