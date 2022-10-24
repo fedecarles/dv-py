@@ -9,6 +9,7 @@ import numpy as np
 
 class TypeEncoder(json.JSONEncoder):
     """Custom encoder class for json"""
+
     def default(self, o):
         if isinstance(o, np.bool_):
             return bool(o)
@@ -23,7 +24,7 @@ class TypeEncoder(json.JSONEncoder):
 
 
 @dataclass
-class Constraints():
+class Constraints:
     """
     The Constraints class provides a data constraints discovery.
     """
@@ -87,35 +88,41 @@ class Constraints():
             A dict with constraints
         """
         all_cols = data.columns
-        nr_cols = data.select_dtypes(include=['number']).columns
-        cat_cols = data.select_dtypes(include=['category']).columns
-        dt_cols = data.select_dtypes(include=['datetime64']).columns
+        nr_cols = data.select_dtypes(include=["number"]).columns
+        cat_cols = data.select_dtypes(include=["category"]).columns
+        dt_cols = data.select_dtypes(include=["datetime64"]).columns
 
         for col in all_cols:
             self.constraints[col] = {
-                    "data_type": self.get_data_type(data, col),
-                    "nullable": self.is_nullable(data, col)
-                    }
+                "data_type": self.get_data_type(data, col),
+                "nullable": self.is_nullable(data, col),
+            }
         for col in cat_cols:
-            self.constraints[col].update({
+            self.constraints[col].update(
+                {
                     "unique": self.is_unique(data, col),
                     "min_length": self.min_length(data, col),
                     "max_length": self.max_length(data, col),
-                    "value_range": self.value_range(data, col)
-                    })
+                    "value_range": self.value_range(data, col),
+                }
+            )
         for col in nr_cols:
-            self.constraints[col].update({
+            self.constraints[col].update(
+                {
                     "min_value": self.min_value(data, col),
-                    "max_value": self.max_value(data, col)
-                    })
+                    "max_value": self.max_value(data, col),
+                }
+            )
         for col in dt_cols:
-            self.constraints[col].update({
+            self.constraints[col].update(
+                {
                     "min_date": self.min_date(data, col),
-                    "max_date": self.max_date(data, col)
-                    })
+                    "max_date": self.max_date(data, col),
+                }
+            )
         return self.constraints
 
-    def modify_constraint(self, column: str,  modify_dict: dict) -> dict:
+    def modify_constraint(self, column: str, modify_dict: dict) -> dict:
         """
         Modify a constrain for a specific column
         Parameters:
@@ -159,9 +166,9 @@ class Constraints():
         elif file_name.endswith(".csv"):
             frame = pd.read_csv(file_name, index_col=0)
             frame["rules"] = [
-                    {k: v for k, v in m.items() if pd.notnull(v)}
-                    for m in frame.to_dict(orient='records')
-                    ]
+                {k: v for k, v in m.items() if pd.notnull(v)}
+                for m in frame.to_dict(orient="records")
+            ]
             frame.loc[:, ["rules"]].groupby(frame.index)
             frame = frame.to_dict()["rules"]
 
@@ -169,12 +176,13 @@ class Constraints():
             for key, val in frame.items():
                 for ix, vl in val.items():
                     if ix == "value_range":
-                        range_values = val["value_range"].replace(
-                                "\'", "\"").replace("nan", "'nan'")
+                        range_values = (
+                            val["value_range"]
+                            .replace("'", '"')
+                            .replace("nan", "'nan'")
+                        )
                         val["value_range"] = literal_eval(
-                                literal_eval(
-                                    json.dumps(range_values)
-                                    )
-                                )
+                            literal_eval(json.dumps(range_values))
+                        )
             self.constraints = frame
         return self.constraints

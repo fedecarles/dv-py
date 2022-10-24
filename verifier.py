@@ -5,11 +5,12 @@ import pandas as pd
 
 
 @dataclass
-class Verifier():
+class Verifier:
     """
     The DataVerifier class provides a way to verify constraints on a
     dataframe.
     """
+
     data: pd.DataFrame
     constraints: dict
 
@@ -47,8 +48,8 @@ class Verifier():
 
     def check_max_length(self, constraint: str, col: str) -> int:
         """Check max length against constraint"""
-        if self.data[col].dtype == 'category':
-            breaks = (self.data[col].str.len() > constraint)
+        if self.data[col].dtype == "category":
+            breaks = self.data[col].str.len() > constraint
             rows = self.data.loc[breaks].copy()
             rows["Validation"] = f"max_length: {col}"
             self.failed_rows.append(rows)
@@ -57,8 +58,8 @@ class Verifier():
 
     def check_min_length(self, constraint: str, col: str) -> int:
         """Check min length against constraint"""
-        if self.data[col].dtype == 'category':
-            breaks = (self.data[col].str.len() < constraint)
+        if self.data[col].dtype == "category":
+            breaks = self.data[col].str.len() < constraint
             rows = self.data.loc[breaks].copy()
             rows["Validation"] = f"min_legth:{col}"
             self.failed_rows.append(rows)
@@ -67,8 +68,9 @@ class Verifier():
 
     def check_value_range(self, constraint: list, col: str) -> int:
         """Check range of values against constraint"""
-        breaks = (self.data[col].notnull()) &\
-                 (~self.data[col].isin(constraint))
+        breaks = (self.data[col].notnull()) & (
+            ~self.data[col].isin(constraint)
+        )
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"value_range: {col}"
         self.failed_rows.append(rows)
@@ -76,7 +78,7 @@ class Verifier():
 
     def check_max_value(self, constraint: str, col: str):
         """Check max value against constraint"""
-        breaks = (self.data[col] > constraint)
+        breaks = self.data[col] > constraint
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"max_value: {col}"
         self.failed_rows.append(rows)
@@ -84,7 +86,7 @@ class Verifier():
 
     def check_min_value(self, constraint: str, col: str):
         """Check min value against constraint"""
-        breaks = (self.data[col] < constraint)
+        breaks = self.data[col] < constraint
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"max_value: {col}"
         self.failed_rows.append(rows)
@@ -92,11 +94,9 @@ class Verifier():
 
     def check_min_date(self, constraint: str, col: str) -> int:
         """Check min date against constraint"""
-        breaks = (
-                pd.to_datetime(
-                    self.data[col],
-                    infer_datetime_format=True) < pd.to_datetime(constraint)
-                )
+        breaks = pd.to_datetime(
+            self.data[col], infer_datetime_format=True
+        ) < pd.to_datetime(constraint)
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"min_date: {col}"
         self.failed_rows.append(rows)
@@ -104,10 +104,9 @@ class Verifier():
 
     def check_max_date(self, constraint: str, col: str) -> int:
         """Check max date against constraint"""
-        breaks = (pd.to_datetime(self.data[col],
-                                 infer_datetime_format=True) >
-                  pd.to_datetime(constraint)
-                  )
+        breaks = pd.to_datetime(
+            self.data[col], infer_datetime_format=True
+        ) > pd.to_datetime(constraint)
         rows = self.data.loc[breaks].copy()
         rows["Validation"] = f"max_date: {col}"
         self.failed_rows.append(rows)
@@ -122,17 +121,17 @@ class Verifier():
             A dict of calculated constraints
         """
         checks_dict = {
-                "data_type": self.check_data_type,
-                "nullable": self.check_nullable,
-                "unique": self.check_unique,
-                "max_length": self.check_max_length,
-                "min_length": self.check_min_length,
-                "value_range": self.check_value_range,
-                "max_value": self.check_max_value,
-                "min_value": self.check_min_value,
-                "max_date": self.check_max_date,
-                "min_date": self.check_min_date
-                }
+            "data_type": self.check_data_type,
+            "nullable": self.check_nullable,
+            "unique": self.check_unique,
+            "max_length": self.check_max_length,
+            "min_length": self.check_min_length,
+            "value_range": self.check_value_range,
+            "max_value": self.check_max_value,
+            "min_value": self.check_min_value,
+            "max_date": self.check_max_date,
+            "min_date": self.check_min_date,
+        }
         return checks_dict[check]
 
     def __validate_data(self) -> pd.DataFrame:
@@ -146,12 +145,12 @@ class Verifier():
         verification = {}
         for col_index, value in self.constraints.items():
             verification[col_index] = {
-                    check_key: self._call_checks(check_key)
-                    (self.constraints[col_index][check_key], col_index)
-                    for check_key, check_value in value.items()
-                    }
+                check_key: self._call_checks(check_key)(
+                    self.constraints[col_index][check_key], col_index
+                )
+                for check_key, check_value in value.items()
+            }
         return pd.DataFrame(verification)
-
 
     def __get_validation_data(self) -> pd.DataFrame:
         """
