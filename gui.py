@@ -157,7 +157,7 @@ def view_validation_data(data: pd.DataFrame):
             [
                 sg.Button("Close"),
                 sg.Input(visible=False, enable_events=True, key="-SAVE_B_AS-"),
-                sg.FileSaveAs("Save", file_types=(("CSV Files", "*.csv*"))),
+                sg.FileSaveAs("Save", file_types=(("CSV Files", "*.csv*"),)),
             ]
         ],
     ]
@@ -210,7 +210,7 @@ layout1 = [
     [
         sg.Button("Validate Data"),
         sg.Input(visible=False, enable_events=True, key="-SAVE_V_AS-"),
-        sg.FileSaveAs("Save Summary", file_types=(("CSV Files", "*.csv*"))),
+        sg.FileSaveAs("Save Summary", file_types=(("CSV Files", "*.csv*"),)),
     ],
     [
         sg.Table(
