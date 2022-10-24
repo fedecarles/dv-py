@@ -173,9 +173,9 @@ class Constraints:
             frame = frame.to_dict()["rules"]
 
             # loop for value_range to read set as literal
-            for key, val in frame.items():
-                for ix, vl in val.items():
-                    if ix == "value_range":
+            for _, val in frame.items():
+                for key, _ in val.items():
+                    if key == "value_range":
                         range_values = (
                             val["value_range"]
                             .replace("'", '"')

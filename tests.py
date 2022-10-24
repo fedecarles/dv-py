@@ -37,7 +37,7 @@ class TestConstraints(unittest.TestCase):
         self.assertEqual(self.data.min_length(d1.data, "Residence_type"), 5)
         self.assertEqual(
             self.data.value_range(d1.data, "work_type"),
-            ["Govt_job", "Private", "Self-employed", "children"],
+            {"Govt_job", "Private", "Self-employed", "children"},
         )
         self.assertEqual(
             self.data.min_value(d1.data, "avg_glucose_level"),

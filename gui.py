@@ -296,6 +296,7 @@ class VerifierProgress(Verifier):
         for col_index, value in self.constraints.items():
             progress += 100 / nr_cols
             window["-PROG-"].Update(progress)
+            # pylint: disable=duplicate-code
             verification[col_index] = {
                 check_key: self._call_checks(check_key)(
                     self.constraints[col_index][check_key], col_index
