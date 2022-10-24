@@ -234,6 +234,7 @@ layout2 = []
 
 tabgrp = [
     [
+        sg.Menu(["Preferences"]),
         sg.Text(),
         sg.Input(enable_events=True, key="-IN-"),
         sg.FileBrowse(file_types=(("CSV Files", "*.csv*"),)),

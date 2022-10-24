@@ -20,5 +20,8 @@ based on pre-define rules. The rules include:
 ## To-do
 
 * [X] Add **Load Constraints** functionality.
-* [ ] Add **Progress bars**.
+* [X] Add **Progress bars**.
+* [ ] Add **Force Data Type** functionality.
+* [ ] Add **Preferences Menu** section.
 * [ ] Add **Data Profile** section.
+
