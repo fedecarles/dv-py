@@ -95,23 +95,27 @@ class Verifier:
 
     def check_min_date(self, constraint: str, col: str) -> int:
         """Check min date against constraint"""
-        breaks = pd.to_datetime(
-            self.data[col], infer_datetime_format=True
-        ) < pd.to_datetime(constraint)
-        rows = self.data.loc[breaks].copy()
-        rows["Validation"] = f"min_date: {col}"
-        self.failed_rows.append(rows)
-        return breaks.sum()
+        if pd.api.types.is_datetime64_dtype(self.data[col]):
+            breaks = pd.to_datetime(
+                pd.Series(self.data[col], dtype="datetime64[ns]")
+            ) < pd.to_datetime(constraint)
+            rows = self.data.loc[breaks].copy()
+            rows["Validation"] = f"min_date: {col}"
+            self.failed_rows.append(rows)
+            return breaks.sum()
+        return None
 
     def check_max_date(self, constraint: str, col: str) -> int:
         """Check max date against constraint"""
-        breaks = pd.to_datetime(
-            self.data[col], infer_datetime_format=True
-        ) > pd.to_datetime(constraint)
-        rows = self.data.loc[breaks].copy()
-        rows["Validation"] = f"max_date: {col}"
-        self.failed_rows.append(rows)
-        return breaks.sum()
+        if pd.api.types.is_datetime64_dtype(self.data[col]):
+            breaks = pd.to_datetime(
+                pd.Series(self.data[col], dtype="datetime64[ns]")
+            ) > pd.to_datetime(constraint)
+            rows = self.data.loc[breaks].copy()
+            rows["Validation"] = f"max_date: {col}"
+            self.failed_rows.append(rows)
+            return breaks.sum()
+        return None
 
     def _call_checks(self, check: str) -> dict:
         """

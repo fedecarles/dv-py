@@ -112,8 +112,8 @@ def modify_constraint(row: pd.DataFrame):
                 "unique": bool,
                 "min_length": lambda i: int(float(i)),
                 "max_length": lambda i: int(float(i)),
-                "value_range": lambda i: list(
-                    map(str.strip, i.strip("][").replace("'", "").split(","))
+                "value_range": lambda i: set(
+                    map(str.strip, i.strip("}{").replace("'", "").split(","))
                 ),
                 "min_value": float,
                 "max_value": float,
@@ -361,9 +361,9 @@ while True:
                     parsed_data.data, const.constraints, ENFORCE_DTYPES
                 )
                 v_update = update_table(HEADINGS, valid.validation_summary)
-                #v_update = v_update.loc[
+                # v_update = v_update.loc[
                 #    v_update.sum(axis=1, numeric_only=True) >= 1
-                #].reset_index(drop=True)
+                # ].reset_index(drop=True)
                 window["-V_TABLE-"].Update(v_update.values.tolist())
             except KeyError as v:
                 sg.Popup(f"Constraint for {v} but {v} not in data")
