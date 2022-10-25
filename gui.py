@@ -361,9 +361,9 @@ while True:
                     parsed_data.data, const.constraints, ENFORCE_DTYPES
                 )
                 v_update = update_table(HEADINGS, valid.validation_summary)
-                v_update = v_update.loc[
-                    v_update.sum(axis=1, numeric_only=True) >= 1
-                ].reset_index(drop=True)
+                #v_update = v_update.loc[
+                #    v_update.sum(axis=1, numeric_only=True) >= 1
+                #].reset_index(drop=True)
                 window["-V_TABLE-"].Update(v_update.values.tolist())
             except KeyError as v:
                 sg.Popup(f"Constraint for {v} but {v} not in data")

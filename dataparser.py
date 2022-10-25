@@ -45,16 +45,14 @@ class DataParser:
             ]:
                 unix_date = self.data[date].astype(str)[:10]
                 self.data[date] = pd.to_datetime(
-                    unix_date,
+                    pd.Series(unix_date, dtype="datetime64[ns]"),
                     unit="s",
                     errors="coerce",
-                    infer_datetime_format=True,
                 ).astype("datetime64[ns]")
             else:
                 self.data[date] = pd.to_datetime(
-                    self.data[date],
+                    pd.Series(self.data[date], dtype="datetime64[ns]"),
                     errors="ignore",
-                    infer_datetime_format=True,
                 ).astype("datetime64[ns]")
         return self.data
 

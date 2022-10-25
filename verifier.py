@@ -49,8 +49,8 @@ class Verifier:
 
     def check_max_length(self, constraint: str, col: str) -> int:
         """Check max length against constraint"""
-        if self.data[col].dtype == "category":
-            breaks = self.data[col].str.len() > constraint
+        if pd.api.types.is_categorical_dtype(self.data[col]):
+            breaks = self.data[col].astype(str).str.len() > constraint
             rows = self.data.loc[breaks].copy()
             rows["Validation"] = f"max_length: {col}"
             self.failed_rows.append(rows)
@@ -59,8 +59,8 @@ class Verifier:
 
     def check_min_length(self, constraint: str, col: str) -> int:
         """Check min length against constraint"""
-        if self.data[col].dtype == "category":
-            breaks = self.data[col].str.len() < constraint
+        if pd.api.types.is_categorical_dtype(self.data[col]):
+            breaks = self.data[col].astype(str).str.len() < constraint
             rows = self.data.loc[breaks].copy()
             rows["Validation"] = f"min_legth:{col}"
             self.failed_rows.append(rows)
