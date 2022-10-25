@@ -13,6 +13,7 @@ class Verifier:
 
     data: pd.DataFrame
     constraints: dict
+    enforce_dtypes: bool = False
 
     def __post_init__(self):
         "Post init calculations."
@@ -134,7 +135,7 @@ class Verifier:
         }
         return checks_dict[check]
 
-    def __validate_data(self) -> pd.DataFrame:
+    def __validate_data(self, enforce_dtypes: bool = False) -> pd.DataFrame:
         """
         Run all checks for the dataframe
         Parameters:
@@ -142,6 +143,15 @@ class Verifier:
         Returns:
             A pandas DataFrame with number of breaks per column
         """
+        if enforce_dtypes:
+            dtypes = {
+                out_key: in_val
+                for out_key, out_val in self.constraints.items()
+                for in_key, in_val in out_val.items()
+                if in_key == "data_type"
+            }
+            self.data = self.data.astype(dtypes)
+
         verification = {}
         for col_index, value in self.constraints.items():
             verification[col_index] = {

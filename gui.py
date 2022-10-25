@@ -10,6 +10,7 @@ from verifier import Verifier
 
 sg.theme("DarkBlue2")
 sg.set_options(font=("Arial", 12))
+enforce_dtypes = True
 
 
 def modify_constraint(row: pd.DataFrame):
@@ -21,7 +22,7 @@ def modify_constraint(row: pd.DataFrame):
         A modified constraints dict and table update
     """
     m_vals = row.to_dict(orient="records")[0]
-    d_types = ["category", "bool", "float"]
+    d_types = ["category", "bool", "float", "int", "object", "str"]
 
     mod_layout = [
         [[sg.Text(f"Attribute: {m_vals['attribute']}")]],
@@ -209,6 +210,9 @@ layout1 = [
     ],
     [
         sg.Button("Validate Data"),
+        sg.Button(
+            "Enforce dtypes", button_color="white on green", key="-DTYPES-"
+        ),
         sg.Input(visible=False, enable_events=True, key="-SAVE_V_AS-"),
         sg.FileSaveAs("Save Summary", file_types=(("CSV Files", "*.csv*"),)),
     ],
@@ -234,7 +238,6 @@ layout2 = []
 
 tabgrp = [
     [
-        sg.Menu(["Preferences"]),
         sg.Text(),
         sg.Input(enable_events=True, key="-IN-"),
         sg.FileBrowse(file_types=(("CSV Files", "*.csv*"),)),
@@ -281,15 +284,25 @@ class VerifierProgress(Verifier):
 
     data: pd.DataFrame
     constraints: dict
+    enforce_dtypes: bool = False
 
-    def __init__(self, data, constraints):
-        super().__init__(data, constraints)
-        self.validation_summary = self.__validate_data()
+    def __init__(self, data, constraints, enforce_dtypes):
+        super().__init__(data, constraints, enforce_dtypes)
+        self.validation_summary = self.__validate_data(self.enforce_dtypes)
 
-    def __validate_data(self) -> pd.DataFrame:
+    def __validate_data(self, enforce_dtypes: bool = False) -> pd.DataFrame:
         """
         Override method to add gui progress bar
         """
+        if enforce_dtypes:
+            dtypes = {
+                out_key: in_val
+                for out_key, out_val in self.constraints.items()
+                for in_key, in_val in out_val.items()
+                if in_key == "data_type"
+            }
+            self.data = self.data.astype(dtypes)
+
         verification = {}
         progress = 0
         nr_cols = len(self.data.columns)
@@ -324,9 +337,18 @@ while True:
             const.generate_constraints(parsed_data.data)
             c_update = update_table(HEADINGS, const.constraints)
             window["-C_TABLE-"].Update(c_update.values.tolist())
+        if event == "-DTYPES-":
+            enforce_dtypes = not enforce_dtypes
+            window["-DTYPES-"].update(
+                button_color="white on green"
+                if enforce_dtypes
+                else "white on red"
+            )
         if event == "Validate Data":
             try:
-                valid = VerifierProgress(parsed_data.data, const.constraints)
+                valid = VerifierProgress(
+                    parsed_data.data, const.constraints, enforce_dtypes
+                )
                 v_update = update_table(HEADINGS, valid.validation_summary)
                 v_update = v_update.loc[
                     v_update.sum(axis=1, numeric_only=True) >= 1
