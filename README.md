@@ -21,7 +21,7 @@ based on pre-define rules. The rules include:
 
 * [X] Add **Load Constraints** functionality.
 * [X] Add **Progress bars**.
-* [ ] Add **Force Data Type** functionality.
+* [X] Add **Force Data Type** functionality. (63d6336)
 * [ ] Add **Preferences Menu** section.
 * [ ] Add **Data Profile** section.
 
