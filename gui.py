@@ -1,4 +1,4 @@
-""" GUI interface for DataFrame validation """
+"""GUI interface for frame validation"""
 from pathlib import Path
 import PySimpleGUI as sg
 import pandas as pd
@@ -10,7 +10,7 @@ from verifier import Verifier
 
 sg.theme("DarkBlue2")
 sg.set_options(font=("Arial", 12))
-enforce_dtypes = True
+ENFORCE_DTYPES = True
 
 
 def modify_constraint(row: pd.DataFrame):
@@ -192,6 +192,7 @@ HEADINGS = [
 layout1 = [
     [
         sg.Button("Generate Constraints"),
+        sg.Button("Recast dtypes"),
         sg.Input(visible=False, enable_events=True, key="-SAVE_C_AS-"),
         sg.FileSaveAs("Save Constraints"),
         sg.Input(visible=False, enable_events=True, key="-READ_C-"),
@@ -279,6 +280,17 @@ def update_table(
     return t_update
 
 
+def get_constraints_dtypes(constraints: dict) -> dict:
+    """Get new data types"""
+    new_dtypes = {
+        out_key: in_val
+        for out_key, out_val in constraints.items()
+        for in_key, in_val in out_val.items()
+        if in_key == "data_type"
+    }
+    return new_dtypes
+
+
 class VerifierProgress(Verifier):
     """Add progress var functionality"""
 
@@ -295,12 +307,7 @@ class VerifierProgress(Verifier):
         Override method to add gui progress bar
         """
         if enforce_dtypes:
-            dtypes = {
-                out_key: in_val
-                for out_key, out_val in self.constraints.items()
-                for in_key, in_val in out_val.items()
-                if in_key == "data_type"
-            }
+            dtypes = get_constraints_dtypes(self.constraints)
             self.data = self.data.astype(dtypes)
 
         verification = {}
@@ -326,9 +333,7 @@ while True:
         break
     if event == "-IN-":
         if Path(values["-IN-"]).exists():
-            df = pd.read_csv(values["-IN-"])
-            parsed_data = DataParser(df)
-            del df
+            parsed_data = DataParser(pd.read_csv(values["-IN-"]))
         else:
             sg.PopupError("File Path does not exists")
     if "parsed_data" in locals():
@@ -337,17 +342,23 @@ while True:
             const.generate_constraints(parsed_data.data)
             c_update = update_table(HEADINGS, const.constraints)
             window["-C_TABLE-"].Update(c_update.values.tolist())
+        if event == "Recast dtypes":
+            dtypes = get_constraints_dtypes(const.constraints)
+            recasted_data = parsed_data.data.astype(dtypes)
+            const.generate_constraints(recasted_data)
+            c_update = update_table(HEADINGS, const.constraints)
+            window["-C_TABLE-"].Update(c_update.values.tolist())
         if event == "-DTYPES-":
-            enforce_dtypes = not enforce_dtypes
+            ENFORCE_DTYPES = not ENFORCE_DTYPES
             window["-DTYPES-"].update(
                 button_color="white on green"
-                if enforce_dtypes
+                if ENFORCE_DTYPES
                 else "white on red"
             )
         if event == "Validate Data":
             try:
                 valid = VerifierProgress(
-                    parsed_data.data, const.constraints, enforce_dtypes
+                    parsed_data.data, const.constraints, ENFORCE_DTYPES
                 )
                 v_update = update_table(HEADINGS, valid.validation_summary)
                 v_update = v_update.loc[
