@@ -43,12 +43,11 @@ class DataParser:
                 "float64",
                 "float32",
             ]:
-                unix = self.data[date].astype(int).astype(str)
-                unix = unix.str[:10].astype(int)
+                unix_date = self.data[date].astype(str)[:10]
                 self.data[date] = pd.to_datetime(
-                    unix,
+                    unix_date,
                     unit="s",
-                    errors="ignore",
+                    errors="coerce",
                     infer_datetime_format=True,
                 ).astype("datetime64[ns]")
             else:
