@@ -235,11 +235,10 @@ layout1 = [
         ),
     ],
 ]
-layout2 = []
 
 tabgrp = [
     [
-        sg.Text(),
+        sg.Text("Data File: "),
         sg.Input(enable_events=True, key="-IN-"),
         sg.FileBrowse(file_types=(("CSV Files", "*.csv*"),)),
     ],
@@ -247,7 +246,6 @@ tabgrp = [
         sg.TabGroup(
             [
                 [sg.Tab("Standard Constraints", layout1)],
-                [sg.Tab("Custom Constraints", layout2)],
             ],
             size=(1920, 900),
         )
