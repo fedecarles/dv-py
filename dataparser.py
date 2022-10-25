@@ -35,9 +35,18 @@ class DataParser:
             regex="Fecha|date|dt|DT|Date|DATE|maturity|EROD"
         ).columns
         for date in date_cols:
-            if self.data[date].dtype in [int, "int32", "int64"]:
+            if self.data[date].dtype in [
+                int,
+                float,
+                "int32",
+                "int64",
+                "float64",
+                "float32",
+            ]:
+                unix = self.data[date].astype(int).astype(str)
+                unix = unix.str[:10].astype(int)
                 self.data[date] = pd.to_datetime(
-                        self.data[date].astype(str)[:10].astype(int),
+                    unix,
                     unit="s",
                     errors="ignore",
                     infer_datetime_format=True,
