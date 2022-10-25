@@ -307,8 +307,8 @@ class VerifierProgress(Verifier):
         Override method to add gui progress bar
         """
         if enforce_dtypes:
-            dtypes = get_constraints_dtypes(self.constraints)
-            self.data = self.data.astype(dtypes)
+            enforced_dtypes = get_constraints_dtypes(self.constraints)
+            self.data = self.data.astype(enforced_dtypes)
 
         verification = {}
         progress = 0
