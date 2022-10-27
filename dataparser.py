@@ -43,17 +43,20 @@ class DataParser:
                 "float64",
                 "float32",
             ]:
-                unix_date = self.data[date].astype(str)[:10]
+                unix_date = self.data[date].clip(lower=0).astype(str)
                 self.data[date] = pd.to_datetime(
-                    pd.Series(unix_date, dtype="datetime64[ns]"),
+                    pd.Series(
+                        unix_date.str[:10] + "." + unix_date[10:],
+                        dtype="datetime64[ns]",
+                    ),
                     unit="s",
-                    errors="coerce",
-                ).astype("datetime64[ns]")
+                    errors="ignore",
+                )
             else:
                 self.data[date] = pd.to_datetime(
                     pd.Series(self.data[date], dtype="datetime64[ns]"),
                     errors="ignore",
-                ).astype("datetime64[ns]")
+                )
         return self.data
 
     def _optimize_dtypes(self) -> pd.DataFrame:
