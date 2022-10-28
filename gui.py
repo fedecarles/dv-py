@@ -3,9 +3,9 @@ from pathlib import Path
 import PySimpleGUI as sg
 import pandas as pd
 import numpy as np
-from dataparser import DataParser
 from constraints import Constraints
 from verifier import Verifier
+from utils import read_file, parse_dates, recast_data_types
 
 
 sg.theme("DarkBlue2")
@@ -22,7 +22,7 @@ def modify_constraint(row: pd.DataFrame):
         A modified constraints dict and table update
     """
     m_vals = row.to_dict(orient="records")[0]
-    d_types = ["category", "bool", "float", "int", "object", "str"]
+    d_types = ["category", "bool", "float", "int", "str", "datetime64[ns]"]
 
     mod_layout = [
         [[sg.Text(f"Attribute: {m_vals['attribute']}")]],
@@ -331,19 +331,21 @@ while True:
         break
     if event == "-IN-":
         if Path(values["-IN-"]).exists():
-            parsed_data = DataParser(pd.read_csv(values["-IN-"]))
+            frame = read_file(values["-IN-"], downcast = True)
         else:
             sg.PopupError("File Path does not exists")
-    if "parsed_data" in locals():
+    if "frame" in locals():
         if event == "Generate Constraints":
             const = Constraints()
-            const.generate_constraints(parsed_data.data)
+            const.generate_constraints(frame)
             c_update = update_table(HEADINGS, const.constraints)
             window["-C_TABLE-"].Update(c_update.values.tolist())
         if event == "Recast dtypes":
             dtypes = get_constraints_dtypes(const.constraints)
-            recasted_data = parsed_data.data.astype(dtypes)
-            const.generate_constraints(recasted_data)
+            # recasted_frame = frame.astype(dtypes)
+            # recasted_frame = parse_dates(recasted_frame)
+            frame = recast_data_types(frame, dtypes)
+            const.generate_constraints(frame)
             c_update = update_table(HEADINGS, const.constraints)
             window["-C_TABLE-"].Update(c_update.values.tolist())
         if event == "-DTYPES-":
@@ -356,7 +358,7 @@ while True:
         if event == "Validate Data":
             try:
                 valid = VerifierProgress(
-                    parsed_data.data, const.constraints, ENFORCE_DTYPES
+                    frame, const.constraints, ENFORCE_DTYPES
                 )
                 v_update = update_table(HEADINGS, valid.validation_summary)
                 # v_update = v_update.loc[

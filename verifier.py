@@ -25,7 +25,7 @@ class Verifier:
         """Check data type against constraint"""
         return self.data[col].dtype.name != constraint
 
-    def check_nullable(self, constraint: str, col: str) -> int:
+    def check_nullable(self, constraint: bool, col: str) -> int:
         """Check null values against constraint"""
         if not constraint:
             breaks = self.data[col].isna()
@@ -36,10 +36,10 @@ class Verifier:
             breaks = pd.Series(False)
         return breaks.sum()
 
-    def check_unique(self, constraint: str, col: str) -> int:
+    def check_unique(self, constraint: bool, col: str) -> int:
         """Check duplicate values against constraint"""
         if constraint:
-            breaks = self.data[col].duplicated()
+            breaks = (self.data[col].notna()) & (self.data[col].duplicated())
             rows = self.data.loc[breaks].copy()
             rows["Validation"] = f"unique: {col}"
             self.failed_rows.append(rows)
@@ -47,20 +47,24 @@ class Verifier:
             breaks = pd.Series(False)
         return breaks.sum()
 
-    def check_max_length(self, constraint: str, col: str) -> int:
+    def check_max_length(self, constraint: int, col: str) -> int:
         """Check max length against constraint"""
-        if pd.api.types.is_categorical_dtype(self.data[col]):
-            breaks = self.data[col].astype(str).str.len() > constraint
+        if not pd.api.types.is_numeric_dtype(self.data[col]):
+            breaks = (self.data[col].notna()) & (
+                self.data[col].astype(str).str.len() > constraint
+            )
             rows = self.data.loc[breaks].copy()
             rows["Validation"] = f"max_length: {col}"
             self.failed_rows.append(rows)
             return breaks.sum()
         return None
 
-    def check_min_length(self, constraint: str, col: str) -> int:
+    def check_min_length(self, constraint: int, col: str) -> int:
         """Check min length against constraint"""
-        if pd.api.types.is_categorical_dtype(self.data[col]):
-            breaks = self.data[col].astype(str).str.len() < constraint
+        if not pd.api.types.is_numeric_dtype(self.data[col]):
+            breaks = (self.data[col].notna()) & (
+                self.data[col].astype(str).str.len() < constraint
+            )
             rows = self.data.loc[breaks].copy()
             rows["Validation"] = f"min_legth:{col}"
             self.failed_rows.append(rows)

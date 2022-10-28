@@ -4,23 +4,7 @@ import json
 from dataclasses import dataclass, field
 from ast import literal_eval
 import pandas as pd
-import numpy as np
-
-
-class TypeEncoder(json.JSONEncoder):
-    """Custom encoder class for json"""
-
-    def default(self, o):
-        if isinstance(o, np.bool_):
-            return bool(o)
-        if isinstance(o, np.integer):
-            return int(o)
-        if isinstance(o, np.floating):
-            return float(o)
-        if isinstance(o, set):
-            return list(o)
-
-        return super().default(o)
+from utils import TypeEncoder
 
 
 @dataclass
@@ -49,7 +33,7 @@ class Constraints:
 
     def min_length(self, data: pd.DataFrame, colname: str) -> int:
         """Get min length constraint"""
-        return min(data[colname].map(str).map(len))
+        return min(data[colname].dropna().map(str).map(len))
 
     def value_range(self, data: pd.DataFrame, colname: str) -> set:
         """Get range of values constraint"""
@@ -89,6 +73,7 @@ class Constraints:
         """
         all_cols = data.columns
         nr_cols = data.select_dtypes(include=["number"]).columns
+        str_cols = data.select_dtypes(include=["string", "object"]).columns
         cat_cols = data.select_dtypes(include=["category"]).columns
         dt_cols = data.select_dtypes(include=["datetime64"]).columns
 
@@ -100,10 +85,17 @@ class Constraints:
         for col in cat_cols:
             self.constraints[col].update(
                 {
-                    "unique": self.is_unique(data, col),
                     "min_length": self.min_length(data, col),
                     "max_length": self.max_length(data, col),
                     "value_range": self.value_range(data, col),
+                }
+            )
+        for col in str_cols:
+            self.constraints[col].update(
+                {
+                    "unique": self.is_unique(data, col),
+                    "min_length": self.min_length(data, col),
+                    "max_length": self.max_length(data, col),
                 }
             )
         for col in nr_cols:

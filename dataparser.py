@@ -45,10 +45,7 @@ class DataParser:
             ]:
                 unix_date = self.data[date].clip(lower=0).astype(str)
                 self.data[date] = pd.to_datetime(
-                    pd.Series(
-                        unix_date.str[:10] + "." + unix_date[10:],
-                        dtype="datetime64[ns]",
-                    ),
+                        pd.Series(unix_date.str[:10] + "." + unix_date[10:], dtype="datetime64[ns]"),
                     unit="s",
                     errors="ignore",
                 )
