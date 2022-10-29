@@ -1,4 +1,4 @@
-""" This module contains utility and helper functions """
+""" This module contains utility and helper functions"""
 import json
 import pandas as pd
 import numpy as np
@@ -55,11 +55,7 @@ def recast_data_types(frame: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
     for date in dates.keys():
         if frame[date].dtype in [
             int,
-            float,
-            "int32",
-            "int64",
-            "float64",
-            "float32",
+            float
         ]:
             unix_date = frame[date].clip(lower=0).astype(str)
             # unix_date = frame[date].astype(int) / 10**9

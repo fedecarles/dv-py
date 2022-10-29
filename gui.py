@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from constraints import Constraints
 from verifier import Verifier
-from utils import read_file, parse_dates, recast_data_types
+from utils import read_file, recast_data_types
 
 
 sg.theme("DarkBlue2")
