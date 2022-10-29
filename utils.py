@@ -13,6 +13,8 @@ def read_file(
         file_path: str a path to csv or xlsx file
         dtypes: a dictionary of data types
         downcast: a boolean to downcast data types
+    Returns:
+        A pandas DataFrame
     """
 
     if ".csv" in file_path:
@@ -36,18 +38,16 @@ def read_file(
     return frame
 
 
-def parse_dates(frame: pd.DataFrame) -> pd.DataFrame:
-    dt_cols = frame.select_dtypes(include=["datetime64"]).columns
-    for date in dt_cols:
-        unix_date = frame[date].astype(int) / 10**9
-        unix_date = unix_date.clip(lower=0).astype(str)
-        frame[date] = pd.to_datetime(
-                pd.Series(unix_date[:10] + "." + unix_date[10:], dtype="datetime64[ns]"), unit="s", origin="unix"
-                )
-        return frame
-
-
 def recast_data_types(frame: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
+    """
+    Recast data types for a pandas data frame. Tries to parse dates in string or
+    unix epoch format.
+    Params:
+        frame: a pandas DataFrame
+        dtypes: a dict of DataFrames columns as kesy and new data type as value.
+    Returns:
+        A pandas DataFrame with recasted data types.
+    """
     non_dates = dict(filter(lambda val: val[1] != "datetime64[ns]", dtypes.items()))
     frame = frame.astype(non_dates)
 
@@ -77,15 +77,8 @@ def recast_data_types(frame: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
                 pd.Series(frame[date], dtype="datetime64[ns]"),
                 errors="ignore",
             )
-        #unix_date = frame[date].astype(int) / 10**9
-        #unix_date = unix_date.clip(lower=0).astype(str)
-        #frame[date] = pd.to_datetime(
-        #        pd.Series(unix_date[:10] + "." + unix_date[10:], dtype="datetime64[ns]"), unit="s", origin="unix"
-        #        )
-
     return frame
     
-
 
 class TypeEncoder(json.JSONEncoder):
     """Custom encoder class for json"""
