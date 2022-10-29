@@ -72,7 +72,6 @@ def recast_data_types(frame: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
                 unit="s",
                 errors="ignore",
             )
-            print(frame[date])
         else:
             frame[date] = pd.to_datetime(
                 pd.Series(frame[date], dtype="datetime64[ns]"),
