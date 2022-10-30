@@ -3,19 +3,14 @@
 import unittest
 import pandas as pd
 import numpy as np
-from dataparser import DataParser
 from constraints import Constraints
 from verifier import Verifier
 
 # Testing data from Kaggle:
 # https://www.kaggle.com/datasets/jillanisofttech/brain-stroke-dataset
 
-constraints_data = pd.read_csv(r"test_data/brain_stroke.csv")
-validation_data = pd.read_csv(r"test_data/brain_stroke_bad.csv")
-
-
-d1 = DataParser(constraints_data)
-d2 = DataParser(validation_data)
+d1 = pd.read_csv(r"test_data/brain_stroke.csv")
+d2 = pd.read_csv(r"test_data/brain_stroke_bad.csv")
 c1 = Constraints()
 c1.generate_constraints(d1.data)
 c1.modify_constraint("age", {"unique": True})

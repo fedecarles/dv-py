@@ -74,7 +74,7 @@ def recast_data_types(frame: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
                 errors="ignore",
             )
     return frame
-    
+
 
 class TypeEncoder(json.JSONEncoder):
     """Custom encoder class for json"""
@@ -88,4 +88,3 @@ class TypeEncoder(json.JSONEncoder):
         if isinstance(o, set):
             return list(o)
         return super().default(o)
-
