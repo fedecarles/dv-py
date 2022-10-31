@@ -342,8 +342,6 @@ while True:
             window["-C_TABLE-"].Update(c_update.values.tolist())
         if event == "Recast dtypes":
             dtypes = get_constraints_dtypes(const.constraints)
-            # recasted_frame = frame.astype(dtypes)
-            # recasted_frame = parse_dates(recasted_frame)
             frame = recast_data_types(frame, dtypes)
             const.generate_constraints(frame)
             c_update = update_table(HEADINGS, const.constraints)
@@ -361,9 +359,9 @@ while True:
                     frame, const.constraints, ENFORCE_DTYPES
                 )
                 v_update = update_table(HEADINGS, valid.validation_summary)
-                # v_update = v_update.loc[
-                #    v_update.sum(axis=1, numeric_only=True) >= 1
-                # ].reset_index(drop=True)
+                v_update = v_update.loc[
+                   v_update.sum(axis=1, numeric_only=True) >= 1
+                ].reset_index(drop=True)
                 window["-V_TABLE-"].Update(v_update.values.tolist())
             except KeyError as v:
                 sg.Popup(f"Constraint for {v} but {v} not in data")
