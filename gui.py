@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from constraints import Constraints
 from verifier import Verifier
-from utils import read_file, recast_data_types
+from utils import read_file
 
 
 sg.theme("DarkBlue2")
@@ -342,7 +342,7 @@ while True:
             window["-C_TABLE-"].Update(c_update.values.tolist())
         if event == "Recast dtypes":
             dtypes = get_constraints_dtypes(const.constraints)
-            frame = recast_data_types(frame, dtypes)
+            frame = read_file(values["-IN-"], downcast = True, dtypes=dtypes)
             const.generate_constraints(frame)
             c_update = update_table(HEADINGS, const.constraints)
             window["-C_TABLE-"].Update(c_update.values.tolist())

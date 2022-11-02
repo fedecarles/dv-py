@@ -5,7 +5,7 @@ import numpy as np
 
 
 def read_file(
-    file_path: str, dtypes: dict = None, downcast: bool = False
+    file_path: str, dtypes: dict = {}, downcast: bool = False
 ) -> pd.DataFrame:
     """
     Reads a csv or xlsx file
@@ -16,49 +16,17 @@ def read_file(
     Returns:
         A pandas DataFrame
     """
+    non_dates = dict(filter(lambda val: val[1] != "datetime64[ns]", dtypes.items()))
+    dates = dict(filter(lambda val: val[1] == "datetime64[ns]", dtypes.items()))
 
     if ".csv" in file_path:
-        frame = pd.read_csv(file_path, dtype=dtypes, sep=",")
+        frame = pd.read_csv(file_path, dtype=non_dates, sep=",")
     elif ".xlsx" in file_path:
-        frame = pd.read_excel(file_path, dtype=dtypes)
-    if downcast:
-        for col in frame.columns:
-            if issubclass(frame[col].dtypes.type, np.int_):
-                frame[col] = pd.to_numeric(frame[col], downcast="integer")
-            elif issubclass(frame[col].dtypes.type, np.float64):
-                frame[col] = pd.to_numeric(frame[col], downcast="float")
-            elif issubclass(frame[col].dtypes.type, np.object_) and (
-                frame[col].duplicated().any()
-            ):
-                frame[col] = frame[col].astype("category")
-            elif issubclass(frame[col].dtypes.type, np.object_) and (
-                frame[col].duplicated().any()
-            ):
-                frame[col] = frame[col].astype("category")
-    return frame
+        frame = pd.read_excel(file_path, dtype=non_dates)
 
-
-def recast_data_types(frame: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
-    """
-    Recast data types for a pandas data frame. Tries to parse dates in string or
-    unix epoch format.
-    Params:
-        frame: a pandas DataFrame
-        dtypes: a dict of DataFrames columns as kesy and new data type as value.
-    Returns:
-        A pandas DataFrame with recasted data types.
-    """
-    non_dates = dict(filter(lambda val: val[1] != "datetime64[ns]", dtypes.items()))
-    frame = frame.astype(non_dates)
-
-    dates = dict(filter(lambda val: val[1] == "datetime64[ns]", dtypes.items()))
     for date in dates.keys():
-        if frame[date].dtype in [
-            int,
-            float
-        ]:
+        if pd.api.types.is_numeric_dtype(frame[date]):
             unix_date = frame[date].clip(lower=0).astype(str)
-            # unix_date = frame[date].astype(int) / 10**9
             unix_date = unix_date.str[:10]
             frame[date] = pd.to_datetime(
                 pd.Series(
@@ -73,6 +41,21 @@ def recast_data_types(frame: pd.DataFrame, dtypes: dict) -> pd.DataFrame:
                 pd.Series(frame[date], dtype="datetime64[ns]"),
                 errors="ignore",
             )
+
+    if downcast:
+        for col in frame.columns:
+            if issubclass(frame[col].dtypes.type, np.int_):
+                frame[col] = pd.to_numeric(frame[col], downcast="integer")
+            elif issubclass(frame[col].dtypes.type, np.float64):
+                frame[col] = pd.to_numeric(frame[col], downcast="float")
+            elif issubclass(frame[col].dtypes.type, np.object_) and (
+                frame[col].duplicated().any()
+            ):
+                frame[col] = frame[col].astype("category")
+            elif issubclass(frame[col].dtypes.type, np.object_) and (
+                frame[col].duplicated().any()
+            ):
+                frame[col] = frame[col].astype("category")
     return frame
 
 
