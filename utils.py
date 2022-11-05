@@ -49,13 +49,13 @@ def read_file(
             elif issubclass(frame[col].dtypes.type, np.float64):
                 frame[col] = pd.to_numeric(frame[col], downcast="float")
             elif issubclass(frame[col].dtypes.type, np.object_) and (
-                frame[col].duplicated().any()
+                len(frame[col].unique()) <= 20
             ):
+                print(len(frame[col].unique()))
                 frame[col] = frame[col].astype("category")
             elif issubclass(frame[col].dtypes.type, np.object_) and (
-                frame[col].duplicated().any()
-            ):
-                frame[col] = frame[col].astype("category")
+                len(frame[col].unique()) > 20):
+                frame[col] = frame[col].astype(str)
     return frame
 
 
