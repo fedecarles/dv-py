@@ -5,7 +5,7 @@ import numpy as np
 
 
 def read_file(
-    file_path: str, dtypes: dict = {}, downcast: bool = False
+    file_path: str, dtypes: dict = None, downcast: bool = False
 ) -> pd.DataFrame:
     """
     Reads a csv or xlsx file
@@ -16,6 +16,7 @@ def read_file(
     Returns:
         A pandas DataFrame
     """
+    dtypes = {}
     non_dates = dict(filter(lambda val: val[1] != "datetime64[ns]", dtypes.items()))
     dates = dict(filter(lambda val: val[1] == "datetime64[ns]", dtypes.items()))
 
