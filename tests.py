@@ -5,26 +5,29 @@ import pandas as pd
 import numpy as np
 from constraints import Constraints
 from verifier import Verifier
+from custom_constraints import CustomConstraint, CustomConstraintSet
+from custom_verifier import CustomVerifier
 
 # Testing data from Kaggle:
 # https://www.kaggle.com/datasets/jillanisofttech/brain-stroke-dataset
 
 d1 = pd.read_csv(r"test_data/brain_stroke.csv")
 d2 = pd.read_csv(r"test_data/brain_stroke_bad.csv")
-c1 = Constraints()
-c1.generate_constraints(d1)
-c1.modify_constraint("age", {"unique": True})
-c1 = c1.constraints
+#c1 = Constraints()
+#c1.generate_constraints(d1)
+#c1.modify_constraint("age", {"unique": True})
+#c1 = c1.constraints
 #v1 = Verifier(d2, c1)
-v1 = Verifier(d1, c1)
+#v1 = Verifier(d1, c1)
 
-d = [
-        {"name": "rule1", "query": "age > 80"},
-        {"name": "rule2", "query": "gender == 'Female'"},
-        {"name": "rule2", "query": "gender == 'Male'"}
-        ]
+c1 = CustomConstraint("rule1", "age > 80")
+c2 = CustomConstraint("rule2", "gender == 'Female'")
+c3 = CustomConstraint("rule3", "gender == 'Male'")
 
-v1.check_custom_constraints(d)
+s1 = CustomConstraintSet([c1, c2, c3])
+
+v1 = CustomVerifier(d1, s1)
+print(v1.validation_summary)
 
 #class TestConstraints(unittest.TestCase):
 #    """Test cases for DataDiscoverer"""

@@ -16,9 +16,12 @@ def read_file(
     Returns:
         A pandas DataFrame
     """
-    dtypes = {}
-    non_dates = dict(filter(lambda val: val[1] != "datetime64[ns]", dtypes.items()))
-    dates = dict(filter(lambda val: val[1] == "datetime64[ns]", dtypes.items()))
+    if dtypes:
+        non_dates = dict(filter(lambda val: val[1] != "datetime64[ns]", dtypes.items()))
+        dates = dict(filter(lambda val: val[1] == "datetime64[ns]", dtypes.items()))
+    else:
+        non_dates = {}
+        dates = {}
 
     if ".csv" in file_path:
         frame = pd.read_csv(file_path, dtype=non_dates, sep=",")
@@ -52,7 +55,6 @@ def read_file(
             elif issubclass(frame[col].dtypes.type, np.object_) and (
                 len(frame[col].unique()) <= 20
             ):
-                print(len(frame[col].unique()))
                 frame[col] = frame[col].astype("category")
             elif issubclass(frame[col].dtypes.type, np.object_) and (
                 len(frame[col].unique()) > 20):

@@ -5,7 +5,7 @@ import pandas as pd
 
 
 @dataclass
-class Verifier:
+class StandardVerifier:
     """
     The DataVerifier class provides a way to verify constraints on a
     dataframe.
@@ -189,3 +189,53 @@ class Verifier:
         failed_data = pd.concat(self.failed_rows)
         return failed_data
 
+
+@dataclass
+class CustomVerifier:
+    """
+    The DataVerifier class provides a way to verify constraints on a
+    dataframe.
+    """
+
+    data: pd.DataFrame
+    constraints: list
+
+    def __post_init__(self):
+        "Post init calculations."
+        self.failed_rows = []
+        self.validation_summary = self.__validate_data()
+        self.validation_data: pd.DataFrame = self.__get_validation_data()
+
+    def check_custom_constraints(self, constraint: dict) -> dict:
+        """Check custom constraints"""
+        rows = self.data.query(constraint.query).copy()
+        rows["Validation"] = f"{constraint.name}: {constraint.query}"
+        self.failed_rows.append(rows)
+        return rows.shape[0]
+
+    def __validate_data(self) -> pd.DataFrame:
+        """
+        Run all checks for the dataframe
+        Parameters:
+            None: Uses object.data and object.constraints
+        Returns:
+            A pandas DataFrame with number of breaks per column
+        """
+        verification = {}
+        for constraint in self.constraints.custom_constraint_set:
+            verification[constraint.name] = {
+                    "count": self.check_custom_constraints(constraint),
+                    "rule": constraint.query
+                    }
+        return pd.DataFrame(verification).T
+
+    def __get_validation_data(self) -> pd.DataFrame:
+        """
+        Gets all dataframe rows with validation breaks.
+        Parameters:
+            None: Uses object.data and object.constraints
+        Returns:
+            A pandas DataFrame with rows of validation breaks
+        """
+        failed_data = pd.concat(self.failed_rows)
+        return failed_data

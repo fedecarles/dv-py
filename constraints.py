@@ -8,9 +8,9 @@ from utils import TypeEncoder
 
 
 @dataclass
-class Constraints:
+class StandardConstraints:
     """
-    The Constraints class provides a data constraints discovery.
+    Standard Constraints class provides a data constraints discovery.
     """
 
     constraints: dict = field(default_factory=dict)
@@ -178,3 +178,20 @@ class Constraints:
                         )
             self.constraints = frame
         return self.constraints
+
+
+@dataclass
+class CustomConstraint:
+    """
+    CustomConstraint class for storing custom constraints rules.
+    """
+    name: str
+    query: str
+
+
+@dataclass
+class CustomConstraintSet:
+    """
+    CustomConstraintSter class for storing a set of CustomConstraint.
+    """
+    custom_constraint_set: list

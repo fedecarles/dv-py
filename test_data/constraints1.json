@@ -2,12 +2,11 @@
     "gender": {
         "data_type": "category",
         "nullable": false,
-        "unique": false,
         "min_length": 4,
         "max_length": 6,
         "value_range": [
-            "Female",
-            "Male"
+            "Male",
+            "Female"
         ]
     },
     "age": {
@@ -31,37 +30,34 @@
     "ever_married": {
         "data_type": "category",
         "nullable": false,
-        "unique": false,
         "min_length": 2,
         "max_length": 3,
         "value_range": [
-            "No",
-            "Yes"
+            "Yes",
+            "No"
         ]
     },
     "work_type": {
         "data_type": "category",
         "nullable": true,
-        "unique": false,
-        "min_length": 7.0,
+        "min_length": 7,
         "max_length": 13.0,
         "value_range": [
+            "children",
             "Govt_job",
             NaN,
             "Self-employed",
-            "children",
             "Private"
         ]
     },
     "Residence_type": {
         "data_type": "category",
         "nullable": false,
-        "unique": false,
         "min_length": 5,
         "max_length": 5,
         "value_range": [
-            "Urban",
-            "Rural"
+            "Rural",
+            "Urban"
         ]
     },
     "avg_glucose_level": {
@@ -79,14 +75,13 @@
     "smoking_status": {
         "data_type": "category",
         "nullable": false,
-        "unique": false,
         "min_length": 6,
         "max_length": 15,
         "value_range": [
-            "Unknown",
-            "never smoked",
             "smokes",
-            "formerly smoked"
+            "never smoked",
+            "formerly smoked",
+            "Unknown"
         ]
     },
     "stroke": {
@@ -98,5 +93,27 @@
         "nullable": false,
         "min_date": "2021-12-31",
         "max_date": "2022-06-30"
+    },
+    "date2": {
+        "data_type": "datetime64[ns]",
+        "nullable": false,
+        "min_date": "2029-03-04",
+        "max_date": "2029-03-04 11:59:59"
+    },
+    "date3": {
+        "data_type": "datetime64[ns]",
+        "nullable": false,
+        "min_date": "2029-03-04",
+        "max_date": "2029-03-04"
+    },
+    "ID1": {
+        "data_type": "category",
+        "nullable": false,
+        "min_length": 26,
+        "max_length": 26,
+        "value_range": [
+            "nan",
+            "\"123456789.00123456789012\""
+        ]
     }
 }
