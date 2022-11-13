@@ -208,8 +208,8 @@ class CustomVerifier:
 
     def check_custom_constraints(self, constraint: dict) -> dict:
         """Check custom constraints"""
-        rows = self.data.query(constraint.query).copy()
-        rows["Validation"] = f"{constraint.name}: {constraint.query}"
+        rows = self.data.query(constraint["query"]).copy()
+        rows["Validation"] = f"{constraint['name']}: {constraint['query']}"
         self.failed_rows.append(rows)
         return rows.shape[0]
 
@@ -222,12 +222,12 @@ class CustomVerifier:
             A pandas DataFrame with number of breaks per column
         """
         verification = {}
-        for constraint in self.constraints.custom_constraint_set:
-            verification[constraint.name] = {
+        for constraint in self.constraints.custom_constraints:
+            verification[constraint["name"]] = {
+                    "rule": constraint["query"]
                     "count": self.check_custom_constraints(constraint),
-                    "rule": constraint.query
                     }
-        return pd.DataFrame(verification).T
+        return pd.DataFrame(verification).T.reset_index()
 
     def __get_validation_data(self) -> pd.DataFrame:
         """

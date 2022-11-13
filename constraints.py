@@ -181,17 +181,23 @@ class StandardConstraints:
 
 
 @dataclass
-class CustomConstraint:
+class CustomConstraints:
     """
     CustomConstraint class for storing custom constraints rules.
     """
-    name: str
-    query: str
+    custom_constraints: list = field(default_factory=list)
 
+    def add_custom_constraint(self, name: str, query: str) -> dict:
+        new_constraint = {}
+        new_constraint["name"] = name
+        new_constraint["query"] = query
+        self.custom_constraints.append(new_constraint)
+        return self.custom_constraints
 
-@dataclass
-class CustomConstraintSet:
-    """
-    CustomConstraintSter class for storing a set of CustomConstraint.
-    """
-    custom_constraint_set: list
+    def delete_custom_constraint(self, name: str) -> dict:
+        for constraint in self.custom_constraints:
+            del constraint[name]
+        return self.custom_constraints
+
+    def view_custom_constraints(self):
+        return pd.DataFrame(self.custom_constraints)
