@@ -1,0 +1,10 @@
+[
+    {
+        "name": "r1",
+        "query": "age > 50"
+    },
+    {
+        "name": "r2",
+        "query": "age > 50 and gender == 'Female'"
+    }
+]

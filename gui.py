@@ -6,12 +6,7 @@ import numpy as np
 from constraints import StandardConstraints, CustomConstraints
 from verifiers import StandardVerifier, CustomVerifier
 from utils import read_file
-from layouts import (STANDARD_HEADINGS, CUSTOM_HEADINGS,
-                     DTYPES,
-                     tabgrp)
-
-
-ENFORCE_DTYPES = True
+from layouts import STANDARD_HEADINGS, CUSTOM_HEADINGS, tabgrp
 
 
 def view_constraint_properties(row: pd.DataFrame):
@@ -45,17 +40,34 @@ def view_validation_data(data: pd.DataFrame):
     :returns: a GUI window with table display of breaks
     """
     standard_validation_layout = [
-        [[sg.Table(values=data.values.tolist(), headings=data.columns.tolist(
-        ), auto_size_columns=False, key="-B_TABLE-", vertical_scroll_only=False, num_rows=20)]],
-        [[sg.Button("Close"), sg.Input(visible=False, enable_events=True, key="-SAVE_B_AS-"),
-          sg.FileSaveAs("Save", file_types=(("CSV Files", "*.csv*"),))]]
+        [
+            [
+                sg.Table(
+                    values=data.values.tolist(),
+                    headings=data.columns.tolist(),
+                    auto_size_columns=False,
+                    key="-B_TABLE-",
+                    vertical_scroll_only=False,
+                    num_rows=20,
+                )
+            ]
+        ],
+        [
+            [
+                sg.Button("Close"),
+                sg.Input(visible=False, enable_events=True, key="-SAVE_B_AS-"),
+                sg.FileSaveAs("Save", file_types=(("CSV Files", "*.csv*"),)),
+            ]
+        ],
     ]
 
     win_width = min(1920, 80 * (len(data.columns)))
-    b_window = sg.Window("Modify Constraint",
-                         standard_validation_layout,
-                         modal=True,
-                         size=(win_width, 500))
+    b_window = sg.Window(
+        "Modify Constraint",
+        standard_validation_layout,
+        modal=True,
+        size=(win_width, 500),
+    )
     while True:
         b_event, b_values = b_window.read()
         if b_event in (sg.WINDOW_CLOSED, "Close"):
@@ -65,9 +77,7 @@ def view_validation_data(data: pd.DataFrame):
             data.to_csv(b_values["-SAVE_B_AS-"])
 
 
-window = sg.Window(
-    "Data Validation", tabgrp, modal=True, resizable=True
-)
+window = sg.Window("Data Validation", tabgrp, modal=True, resizable=True)
 
 
 def update_table(headings: list, data: pd.DataFrame) -> pd.DataFrame:
@@ -86,7 +96,11 @@ def update_table(headings: list, data: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_constraints_dtypes(constraints: dict) -> dict:
-    """Get new data types"""
+    """
+    Get new constraints data types
+    :param: Constraints object
+    :return: dictionary of new data types
+    """
     new_dtypes = {
         out_key: in_val
         for out_key, out_val in constraints.items()
@@ -97,8 +111,10 @@ def get_constraints_dtypes(constraints: dict) -> dict:
 
 
 class VerifierProgress(StandardVerifier):
-    """Add progress var functionality"""
-
+    """
+    Overrides StandardVerifier validation function to 
+    incorporate GUI progress bar functionality
+    """
     data: pd.DataFrame
     constraints: dict
     enforce_dtypes: bool = True
@@ -132,125 +148,175 @@ class VerifierProgress(StandardVerifier):
 
 
 # Main loop
-while True:
-    event, values = window.read()
-    if event in (sg.WINDOW_CLOSED, "Exit"):
-        break
-    if event == "-IN-":
-        if Path(values["-IN-"]).exists():
-            frame = read_file(values["-IN-"], downcast=True)
-        else:
-            sg.PopupError("File Path does not exists")
-    if "frame" in locals():
-        if event == "Generate Constraints":
-            const = StandardConstraints()
-            const.generate_constraints(frame)
-            c_update = update_table(STANDARD_HEADINGS, const.constraints)
-            window["-C_TABLE-"].Update(c_update.values.tolist())
+def main():
 
-        if event == "-C_TABLE-":
-            t_data_index = values["-C_TABLE-"]
-            if len(t_data_index) > 0:
-                row_data = c_update.filter(items=t_data_index, axis=0)
-                view_constraint_properties(row_data)
+    ENFORCE_DTYPES = True
 
-        if event == "Update":
-            new_values = update_constraint_properties(row_data)
-            mod = {
-                k: v for k, v in new_values.items() if v not in ["nan", "NaN"]
-            }
-            dtype_mapping = {
-                "attribute": str,
-                "data_type": str,
-                "nullable": bool,
-                "unique": bool,
-                "min_length": lambda i: int(float(i)),
-                "max_length": lambda i: int(float(i)),
-                "value_range": lambda i: set(
-                    map(str.strip, i.strip("}{").replace(
-                        "'", "").split(","))
-                ),
-                "min_value": float,
-                "max_value": float,
-                "min_date": str,
-                "max_date": str,
-            }
-            mod = {
-                key: dtype_mapping.get(key)(value)
-                for key, value in mod.items()
-            }
-            del mod["attribute"]
-            const.modify_constraint(new_values["attribute"], mod)
-            m_update = update_table(STANDARD_HEADINGS, const.constraints)
-            window["-C_TABLE-"].Update(m_update.values.tolist())
-
-        if event == "Recast dtypes":
-            dtypes = get_constraints_dtypes(const.constraints)
-            frame = read_file(values["-IN-"], downcast=True, dtypes=dtypes)
-            const.generate_constraints(frame)
-            c_update = update_table(STANDARD_HEADINGS, const.constraints)
-            window["-C_TABLE-"].Update(c_update.values.tolist())
-        if event == "-DTYPES-":
-            ENFORCE_DTYPES = not ENFORCE_DTYPES
-            window["-DTYPES-"].update(
-                button_color="white on green"
-                if ENFORCE_DTYPES
-                else "white on red"
-            )
-        if event == "Validate Data":
-            try:
-                valid = VerifierProgress(
-                    frame, const.constraints, ENFORCE_DTYPES
+    while True:
+        event, values = window.read()
+        if event in (sg.WINDOW_CLOSED, "Exit"):
+            break
+        if event == "-IN-":
+            if Path(values["-IN-"]).exists():
+                frame = read_file(values["-IN-"], downcast=True)
+            else:
+                sg.PopupError("File Path does not exists")
+        if "frame" in locals():
+            if event == "Generate Constraints":
+                const = StandardConstraints()
+                const.generate_constraints(frame)
+                c_update = update_table(STANDARD_HEADINGS, const.constraints)
+                window["-C_TABLE-"].Update(c_update.values.tolist())
+    
+            if event == "-C_TABLE-":
+                t_data_index = values["-C_TABLE-"]
+                if len(t_data_index) > 0:
+                    row_data = c_update.filter(items=t_data_index, axis=0)
+                    view_constraint_properties(row_data)
+    
+            if event == "Update":
+                new_values = update_constraint_properties(row_data)
+                mod = {
+                    k: v for k, v in new_values.items() if v not in ["nan", "NaN"]
+                }
+                dtype_mapping = {
+                    "attribute": str,
+                    "data_type": str,
+                    "nullable": bool,
+                    "unique": bool,
+                    "min_length": lambda i: int(float(i)),
+                    "max_length": lambda i: int(float(i)),
+                    "value_range": lambda i: set(
+                        map(str.strip, i.strip("}{").replace("'", "").split(","))
+                    ),
+                    "min_value": float,
+                    "max_value": float,
+                    "min_date": str,
+                    "max_date": str,
+                }
+                mod = {
+                    key: dtype_mapping.get(key)(value)
+                    for key, value in mod.items()
+                }
+                del mod["attribute"]
+                const.modify_constraint(new_values["attribute"], mod)
+                m_update = update_table(STANDARD_HEADINGS, const.constraints)
+                window["-C_TABLE-"].Update(m_update.values.tolist())
+    
+            if event == "Recast dtypes":
+                dtypes = get_constraints_dtypes(const.constraints)
+                frame = read_file(values["-IN-"], downcast=True, dtypes=dtypes)
+                const.generate_constraints(frame)
+                c_update = update_table(STANDARD_HEADINGS, const.constraints)
+                window["-C_TABLE-"].Update(c_update.values.tolist())
+            if event == "-DTYPES-":
+                ENFORCE_DTYPES = not ENFORCE_DTYPES
+                window["-DTYPES-"].update(
+                    button_color="white on green"
+                    if ENFORCE_DTYPES
+                    else "white on red"
                 )
-                v_update = update_table(STANDARD_HEADINGS,
-                                        valid.validation_summary)
-                v_update = v_update.infer_objects()
-                v_update = v_update.loc[
-                    v_update.sum(axis=1, numeric_only=True) >= 1
-                ].reset_index(drop=True)
-                window["-V_TABLE-"].Update(v_update.values.tolist())
-            except KeyError as v:
-                sg.Popup(f"Constraint for {v} but {v} not in data")
-
+            if event == "Validate Data":
+                try:
+                    valid = VerifierProgress(
+                        frame, const.constraints, ENFORCE_DTYPES
+                    )
+                    v_update = update_table(
+                        STANDARD_HEADINGS, valid.validation_summary
+                    )
+                    v_update = v_update.infer_objects()
+                    v_update = v_update.loc[
+                        v_update.sum(axis=1, numeric_only=True) >= 1
+                    ].reset_index(drop=True)
+                    window["-V_TABLE-"].Update(v_update.values.tolist())
+                except KeyError as v:
+                    sg.Popup(f"Constraint for {v} but {v} not in data")
+        else:
+            sg.PopupError("No Data is loaded")
+    
+        if event == "-V_TABLE-":
+            t_data_index = values["-V_TABLE-"]
+            row_data = v_update.filter(items=t_data_index, axis=0)
+            if len(row_data) > 0:
+                row_data = row_data.to_dict(orient="records")[0]
+                validation_data = valid.validation_data[
+                    valid.validation_data["Validation"].str.contains(
+                        row_data["attribute"]
+                    )
+                ]
+                view_validation_data(validation_data)
+    
+        # Custom constraints
+        if event == "Create":
+            if "custom_constraints" not in locals():
+                custom_constraints = CustomConstraints()
+                custom_constraints.add_custom_constraint(
+                    values["-NAME-"], values["-QUERY-"]
+                )
+            else:
+                custom_constraints.add_custom_constraint(
+                    values["-NAME-"], values["-QUERY-"]
+                )
+            all_custom_constraints = custom_constraints.view_custom_constraints()
+            window["-CUSTOM_TABLE-"].Update(all_custom_constraints.values.tolist())
+    
+        if event == "-CUSTOM_TABLE-":
+            t_data_index = values["-CUSTOM_TABLE-"]
+            if len(t_data_index) > 0:
+                ct_update = update_table(
+                    ["name", "query"], all_custom_constraints.T
+                )
+                row_data = ct_update.filter(items=t_data_index, axis=0)
+                window["-NAME-"].Update(row_data["name"].values[0])
+                window["-QUERY-"].Update(row_data["query"].values[0])
+    
+        if event == "Delete":
+            custom_constraints.delete_custom_constraint(values["-NAME-"])
+            all_custom_constraints = custom_constraints.view_custom_constraints()
+            window["-CUSTOM_TABLE-"].Update(all_custom_constraints.values.tolist())
+    
         if event == "Validate Custom":
             custom_verify = CustomVerifier(frame, custom_constraints)
-            window["-CV_TABLE-"].Update(custom_verify.validation_summary.values.tolist())
-    else:
-        sg.PopupError("No Data is loaded")
-
-    if event == "-V_TABLE-":
-        t_data_index = values["-V_TABLE-"]
-        row_data = v_update.filter(items=t_data_index, axis=0)
-        if len(row_data) > 0:
-            row_data = row_data.to_dict(orient="records")[0]
-            validation_data = valid.validation_data[
-                valid.validation_data["Validation"].str.contains(
-                    row_data["attribute"]
-                )
-            ]
-            view_validation_data(validation_data)
-
-    # Custom constraints
-    if event == "Create":
-        if "custom_constraints" not in locals():
+            window["-CV_TABLE-"].Update(
+                custom_verify.validation_summary.values.tolist()
+            )
+    
+        if event == "-CV_TABLE-":
+            t_data_index = values["-CV_TABLE-"]
+            row_data = custom_verify.validation_summary.filter(
+                items=t_data_index, axis=0
+            )
+            if len(row_data) > 0:
+                row_data = row_data.to_dict(orient="records")[0]
+                validation_data = custom_verify.validation_data[
+                    custom_verify.validation_data["Validation"].str.contains(
+                        row_data["name"]
+                    )
+                ]
+                view_validation_data(validation_data)
+    
+        # Loading and saving events
+        if event == "-SAVE_C_AS-":
+            const.save_as(values["-SAVE_C_AS-"])
+        if event == "-READ_C-":
+            const = StandardConstraints()
+            const.read_constraints(values["-READ_C-"])
+            c_update = update_table(STANDARD_HEADINGS, const.constraints)
+            window["-C_TABLE-"].Update(c_update.values.tolist())
+        if event == "-SAVE_V_AS-":
+            valid.validation_summary.T.to_csv(values["-SAVE_V_AS-"])
+    
+        if event == "-SAVE_CUSTOM_AS-":
+            custom_constraints.save_as(values["-SAVE_CUSTOM_AS-"])
+        if event == "-READ_CUSTOM-":
             custom_constraints = CustomConstraints()
-            custom_constraints.add_custom_constraint(values["-NAME-"],
-                                                     values["-QUERY-"])
-        else:
-            custom_constraints.add_custom_constraint(values["-NAME-"],
-                                                     values["-QUERY-"])
-        all_custom_constraints = custom_constraints.view_custom_constraints()
-        window["-CUSTOM_TABLE-"].Update(all_custom_constraints.values.tolist())
+            custom_constraints.read_constraints(values["-READ_CUSTOM-"])
+            ct_update = pd.DataFrame(custom_constraints.custom_constraints)
+            window["-CUSTOM_TABLE-"].Update(ct_update.values.tolist())
+        if event == "-SAVE_CV_AS-":
+            custom_verify.validation_summary.to_csv(values["-SAVE_CV_AS-"])
 
-    # Loading and saving events
-    if event == "-SAVE_C_AS-":
-        const.save_as(values["-SAVE_C_AS-"])
-    if event == "-READ_C-":
-        const = StandardConstraints()
-        const.read_constraints(values["-READ_C-"])
-        c_update = update_table(STANDARD_HEADINGS, const.constraints)
-        window["-C_TABLE-"].Update(c_update.values.tolist())
-    if event == "-SAVE_V_AS-":
-        valid.validation_summary.T.to_csv(values["-SAVE_V_AS-"])
+    window.close()
 
-window.close()
+if __name__ == "__main__":
+    main()

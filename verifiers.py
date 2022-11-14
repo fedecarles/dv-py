@@ -198,7 +198,7 @@ class CustomVerifier:
     """
 
     data: pd.DataFrame
-    constraints: list
+    constraints: list 
 
     def __post_init__(self):
         "Post init calculations."
@@ -224,10 +224,12 @@ class CustomVerifier:
         verification = {}
         for constraint in self.constraints.custom_constraints:
             verification[constraint["name"]] = {
-                    "rule": constraint["query"]
-                    "count": self.check_custom_constraints(constraint),
+                    "name": constraint["name"],
+                    "rule": constraint["query"],
+                    "count": self.check_custom_constraints(constraint)
                     }
-        return pd.DataFrame(verification).T.reset_index()
+        summary = pd.DataFrame(verification).T.reset_index()
+        return summary[["name", "rule", "count"]]
 
     def __get_validation_data(self) -> pd.DataFrame:
         """

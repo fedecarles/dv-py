@@ -1,0 +1,4 @@
+,name,query
+0,r1,age > 50
+1,r2,age > 60
+2,r3,age > 70

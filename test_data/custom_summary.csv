@@ -1,0 +1,4 @@
+,0,1
+name,R1,R2
+rule,age > 82,age > 50
+count,0,2093

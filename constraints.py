@@ -185,19 +185,60 @@ class CustomConstraints:
     """
     CustomConstraint class for storing custom constraints rules.
     """
+
     custom_constraints: list = field(default_factory=list)
 
     def add_custom_constraint(self, name: str, query: str) -> dict:
         new_constraint = {}
         new_constraint["name"] = name
         new_constraint["query"] = query
-        self.custom_constraints.append(new_constraint)
+        if new_constraint in self.custom_constraints:
+            print(f"{new_constraint} already exists.")
+        else:
+            self.custom_constraints.append(new_constraint)
         return self.custom_constraints
 
     def delete_custom_constraint(self, name: str) -> dict:
         for constraint in self.custom_constraints:
-            del constraint[name]
+            if constraint["name"] == name:
+                self.custom_constraints.remove(constraint)
         return self.custom_constraints
 
     def view_custom_constraints(self):
         return pd.DataFrame(self.custom_constraints)
+
+    def save_as(self, save_as: str):
+        """
+        Save constraints to file
+        Parameters:
+            save_as: an str with csv or json file name
+        Returns:
+            Saves a csv or json file to local disk
+        """
+        if save_as.endswith(".json"):
+            with open(save_as, "w", encoding="utf-8") as s_file:
+                json.dump(
+                    self.custom_constraints, s_file, indent=4, cls=TypeEncoder
+                )
+        elif save_as.endswith(".csv"):
+            frame = pd.DataFrame(self.custom_constraints)
+            frame.to_csv(save_as)
+        else:
+            raise ValueError("Save values can be 'json' or 'csv'")
+
+    def read_constraints(self, file_name: str):
+        """
+        Read constraints from file
+        Parameters:
+            file_name: an str with csv or json file name
+        Returns:
+            A dict with constrains key, values pairs
+        """
+        if file_name.endswith(".json"):
+            with open(file_name, "r", encoding="utf-8") as read_file:
+                self.custom_constraints = json.loads(read_file.read())
+        elif file_name.endswith(".csv"):
+            frame = pd.read_csv(file_name, index_col=0)
+            frame = frame.to_dict("records")
+            self.custom_constraints = frame
+        return self.custom_constraints
