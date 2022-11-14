@@ -65,11 +65,9 @@ class StandardConstraints:
 
     def generate_constraints(self, data: pd.DataFrame) -> dict:
         """
-        Generate constraints dict
-        Parameters:
-            data: a pandas DataFrame
-        Returns:
-            A dict with constraints
+        Discover standard constraints dict based on provided DataFrame
+        :param data: a pandas DataFrame
+        :return: A dict with constraints
         """
         all_cols = data.columns
         nr_cols = data.select_dtypes(include=["number"]).columns
@@ -130,10 +128,8 @@ class StandardConstraints:
     def save_as(self, save_as: str):
         """
         Save constraints to file
-        Parameters:
-            save_as: an str with csv or json file name
-        Returns:
-            Saves a csv or json file to local disk
+        :param save_as: an str with csv or json file name
+        :return: a csv or json file saved to local disk
         """
         if save_as.endswith(".json"):
             with open(save_as, "w", encoding="utf-8") as s_file:
@@ -147,10 +143,8 @@ class StandardConstraints:
     def read_constraints(self, file_name: str):
         """
         Read constraints from file
-        Parameters:
-            file_name: an str with csv or json file name
-        Returns:
-            A dict with constrains key, values pairs
+        :param file_name: an str with csv or json file name
+        :returns: a dict with constrains key, values pairs
         """
         if file_name.endswith(".json"):
             with open(file_name, "r", encoding="utf-8") as read_file:
@@ -188,7 +182,13 @@ class CustomConstraints:
 
     custom_constraints: list = field(default_factory=list)
 
-    def add_custom_constraint(self, name: str, query: str) -> dict:
+    def add_custom_constraint(self, name: str, query: str) -> list:
+        """
+        Add a custom constraint
+        :param name: an str with the name of the custom validation
+        :param query: a pandas query str
+        :return: an updated custom constraints list
+        """
         new_constraint = {}
         new_constraint["name"] = name
         new_constraint["query"] = query
@@ -198,22 +198,30 @@ class CustomConstraints:
             self.custom_constraints.append(new_constraint)
         return self.custom_constraints
 
-    def delete_custom_constraint(self, name: str) -> dict:
+    def delete_custom_constraint(self, name: str) -> list:
+        """
+        Delete a custom constraint
+        :param: an str with the name of the custom rule
+        :return: an updated custom constraints list
+        """
         for constraint in self.custom_constraints:
             if constraint["name"] == name:
                 self.custom_constraints.remove(constraint)
         return self.custom_constraints
 
     def view_custom_constraints(self):
+        """
+        Convert list of custom constraints to DataFrame
+        :param: None
+        :return: a DataFrame with all custom constraints
+        """
         return pd.DataFrame(self.custom_constraints)
 
     def save_as(self, save_as: str):
         """
         Save constraints to file
-        Parameters:
-            save_as: an str with csv or json file name
-        Returns:
-            Saves a csv or json file to local disk
+        :param save_as: an str with csv or json file name
+        :returns: saves a csv or json file to local disk
         """
         if save_as.endswith(".json"):
             with open(save_as, "w", encoding="utf-8") as s_file:
@@ -229,10 +237,8 @@ class CustomConstraints:
     def read_constraints(self, file_name: str):
         """
         Read constraints from file
-        Parameters:
-            file_name: an str with csv or json file name
-        Returns:
-            A dict with constrains key, values pairs
+        :param file_name: an str with csv or json file name
+        :returns: a dict with constrains key, values pairs
         """
         if file_name.endswith(".json"):
             with open(file_name, "r", encoding="utf-8") as read_file:

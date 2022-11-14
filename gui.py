@@ -12,8 +12,8 @@ from layouts import STANDARD_HEADINGS, CUSTOM_HEADINGS, tabgrp
 def view_constraint_properties(row: pd.DataFrame):
     """
     Opens a GUI window to Modify a single constraint
-    :param: row: a single row pandas DataFrame
-    :returns: a modified constraints dict and table update
+    :param row: a single row pandas DataFrame
+    :return: a modified constraints dict and table update
     """
     row_vals = row.to_dict(orient="records")[0]
     for key, _ in row_vals.items():
@@ -24,8 +24,8 @@ def view_constraint_properties(row: pd.DataFrame):
 def update_constraint_properties(row: pd.DataFrame):
     """
     Opens a GUI window to Modify a single constraint
-    :param: row: a single row pandas DataFrame
-    :returns: a modified constraints dict and table update
+    :param row: a single row pandas DataFrame
+    :return: a modified constraints dict and table update
     """
     new_vals = row.to_dict(orient="records")[0]
     for key, _ in new_vals.items():
@@ -36,8 +36,8 @@ def update_constraint_properties(row: pd.DataFrame):
 def view_validation_data(data: pd.DataFrame):
     """
     Opens a GUI window to view the validation break records
-    :param: row: a Verifier.validation_data DataFrame
-    :returns: a GUI window with table display of breaks
+    :param row: a Verifier.validation_data DataFrame
+    :return: a GUI window with table display of breaks
     """
     standard_validation_layout = [
         [
@@ -83,9 +83,9 @@ window = sg.Window("Data Validation", tabgrp, modal=True, resizable=True)
 def update_table(headings: list, data: pd.DataFrame) -> pd.DataFrame:
     """
     Update GUI validation tables
-    :param: headings: a list of column names
-    :param: data: a constraints dict
-    :returns: an updated pandas DataFrame
+    :param headings: a list of column names
+    :param data: a constraints dict
+    :return: an updated pandas DataFrame
     """
     cols = pd.DataFrame(columns=headings)
     t_data = pd.DataFrame(data).T.reset_index()
@@ -98,7 +98,7 @@ def update_table(headings: list, data: pd.DataFrame) -> pd.DataFrame:
 def get_constraints_dtypes(constraints: dict) -> dict:
     """
     Get new constraints data types
-    :param: Constraints object
+    :param Constraints object
     :return: dictionary of new data types
     """
     new_dtypes = {
@@ -112,9 +112,10 @@ def get_constraints_dtypes(constraints: dict) -> dict:
 
 class VerifierProgress(StandardVerifier):
     """
-    Overrides StandardVerifier validation function to 
+    Overrides StandardVerifier validation function to
     incorporate GUI progress bar functionality
     """
+
     data: pd.DataFrame
     constraints: dict
     enforce_dtypes: bool = True
@@ -166,18 +167,20 @@ def main():
                 const = StandardConstraints()
                 const.generate_constraints(frame)
                 c_update = update_table(STANDARD_HEADINGS, const.constraints)
-                window["-C_TABLE-"].Update(c_update.values.tolist())
-    
-            if event == "-C_TABLE-":
-                t_data_index = values["-C_TABLE-"]
+                window["-STANDARD_TABLE-"].Update(c_update.values.tolist())
+
+            if event == "-STANDARD_TABLE-":
+                t_data_index = values["-STANDARD_TABLE-"]
                 if len(t_data_index) > 0:
                     row_data = c_update.filter(items=t_data_index, axis=0)
                     view_constraint_properties(row_data)
-    
+
             if event == "Update":
                 new_values = update_constraint_properties(row_data)
                 mod = {
-                    k: v for k, v in new_values.items() if v not in ["nan", "NaN"]
+                    k: v
+                    for k, v in new_values.items()
+                    if v not in ["nan", "NaN"]
                 }
                 dtype_mapping = {
                     "attribute": str,
@@ -187,7 +190,10 @@ def main():
                     "min_length": lambda i: int(float(i)),
                     "max_length": lambda i: int(float(i)),
                     "value_range": lambda i: set(
-                        map(str.strip, i.strip("}{").replace("'", "").split(","))
+                        map(
+                            str.strip,
+                            i.strip("}{").replace("'", "").split(","),
+                        )
                     ),
                     "min_value": float,
                     "max_value": float,
@@ -201,14 +207,14 @@ def main():
                 del mod["attribute"]
                 const.modify_constraint(new_values["attribute"], mod)
                 m_update = update_table(STANDARD_HEADINGS, const.constraints)
-                window["-C_TABLE-"].Update(m_update.values.tolist())
-    
+                window["-STANDARD_TABLE-"].Update(m_update.values.tolist())
+
             if event == "Recast dtypes":
                 dtypes = get_constraints_dtypes(const.constraints)
                 frame = read_file(values["-IN-"], downcast=True, dtypes=dtypes)
                 const.generate_constraints(frame)
                 c_update = update_table(STANDARD_HEADINGS, const.constraints)
-                window["-C_TABLE-"].Update(c_update.values.tolist())
+                window["-STANDARD_TABLE-"].Update(c_update.values.tolist())
             if event == "-DTYPES-":
                 ENFORCE_DTYPES = not ENFORCE_DTYPES
                 window["-DTYPES-"].update(
@@ -233,7 +239,7 @@ def main():
                     sg.Popup(f"Constraint for {v} but {v} not in data")
         else:
             sg.PopupError("No Data is loaded")
-    
+
         if event == "-V_TABLE-":
             t_data_index = values["-V_TABLE-"]
             row_data = v_update.filter(items=t_data_index, axis=0)
@@ -245,7 +251,7 @@ def main():
                     )
                 ]
                 view_validation_data(validation_data)
-    
+
         # Custom constraints
         if event == "Create":
             if "custom_constraints" not in locals():
@@ -257,9 +263,13 @@ def main():
                 custom_constraints.add_custom_constraint(
                     values["-NAME-"], values["-QUERY-"]
                 )
-            all_custom_constraints = custom_constraints.view_custom_constraints()
-            window["-CUSTOM_TABLE-"].Update(all_custom_constraints.values.tolist())
-    
+            all_custom_constraints = (
+                custom_constraints.view_custom_constraints()
+            )
+            window["-CUSTOM_TABLE-"].Update(
+                all_custom_constraints.values.tolist()
+            )
+
         if event == "-CUSTOM_TABLE-":
             t_data_index = values["-CUSTOM_TABLE-"]
             if len(t_data_index) > 0:
@@ -269,18 +279,22 @@ def main():
                 row_data = ct_update.filter(items=t_data_index, axis=0)
                 window["-NAME-"].Update(row_data["name"].values[0])
                 window["-QUERY-"].Update(row_data["query"].values[0])
-    
+
         if event == "Delete":
             custom_constraints.delete_custom_constraint(values["-NAME-"])
-            all_custom_constraints = custom_constraints.view_custom_constraints()
-            window["-CUSTOM_TABLE-"].Update(all_custom_constraints.values.tolist())
-    
+            all_custom_constraints = (
+                custom_constraints.view_custom_constraints()
+            )
+            window["-CUSTOM_TABLE-"].Update(
+                all_custom_constraints.values.tolist()
+            )
+
         if event == "Validate Custom":
             custom_verify = CustomVerifier(frame, custom_constraints)
             window["-CV_TABLE-"].Update(
                 custom_verify.validation_summary.values.tolist()
             )
-    
+
         if event == "-CV_TABLE-":
             t_data_index = values["-CV_TABLE-"]
             row_data = custom_verify.validation_summary.filter(
@@ -294,7 +308,7 @@ def main():
                     )
                 ]
                 view_validation_data(validation_data)
-    
+
         # Loading and saving events
         if event == "-SAVE_C_AS-":
             const.save_as(values["-SAVE_C_AS-"])
@@ -302,10 +316,10 @@ def main():
             const = StandardConstraints()
             const.read_constraints(values["-READ_C-"])
             c_update = update_table(STANDARD_HEADINGS, const.constraints)
-            window["-C_TABLE-"].Update(c_update.values.tolist())
+            window["-STANDARD_TABLE-"].Update(c_update.values.tolist())
         if event == "-SAVE_V_AS-":
             valid.validation_summary.T.to_csv(values["-SAVE_V_AS-"])
-    
+
         if event == "-SAVE_CUSTOM_AS-":
             custom_constraints.save_as(values["-SAVE_CUSTOM_AS-"])
         if event == "-READ_CUSTOM-":
@@ -317,6 +331,7 @@ def main():
             custom_verify.validation_summary.to_csv(values["-SAVE_CV_AS-"])
 
     window.close()
+
 
 if __name__ == "__main__":
     main()

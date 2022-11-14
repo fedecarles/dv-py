@@ -132,10 +132,8 @@ class StandardVerifier:
     def _call_checks(self, check: str) -> dict:
         """
         Map constraint names with functions.
-        Parameters:
-            check: a str of check type
-        Returns:
-            A dict of calculated constraints
+        :param check: a str of check type
+        :return: a dict of calculated constraints
         """
         checks_dict = {
             "data_type": self.check_data_type,
@@ -153,11 +151,9 @@ class StandardVerifier:
 
     def __validate_data(self, enforce_dtypes: bool = False) -> pd.DataFrame:
         """
-        Run all checks for the dataframe
-        Parameters:
-            None: Uses object.data and object.constraints
-        Returns:
-            A pandas DataFrame with number of breaks per column
+        Run all checks for the DataFrame
+        :param enforce_dtypes: a bool to enforce constraint dtype on validation
+        :return: a DataFrame with number of breaks per column
         """
         if enforce_dtypes:
             dtypes = {
@@ -180,11 +176,9 @@ class StandardVerifier:
 
     def __get_validation_data(self) -> pd.DataFrame:
         """
-        Gets all dataframe rows with validation breaks.
-        Parameters:
-            None: Uses object.data and object.constraints
-        Returns:
-            A pandas DataFrame with rows of validation breaks
+        Gets all DataFrame rows with validation breaks.
+        :param: None
+        :returns: a DataFrame with rows of validation breaks
         """
         failed_data = pd.concat(self.failed_rows)
         return failed_data
@@ -207,7 +201,12 @@ class CustomVerifier:
         self.validation_data: pd.DataFrame = self.__get_validation_data()
 
     def check_custom_constraints(self, constraint: dict) -> dict:
-        """Check custom constraints"""
+        """
+        Check custom constraints
+        :param constraint: a custom constraint dict with name and query keys
+        :return: an int with count of breaks
+        """
+        
         rows = self.data.query(constraint["query"]).copy()
         rows["Validation"] = f"{constraint['name']}: {constraint['query']}"
         self.failed_rows.append(rows)
@@ -216,10 +215,8 @@ class CustomVerifier:
     def __validate_data(self) -> pd.DataFrame:
         """
         Run all checks for the dataframe
-        Parameters:
-            None: Uses object.data and object.constraints
-        Returns:
-            A pandas DataFrame with number of breaks per column
+        :param: None
+        :returns: a DataFrame with number of breaks per column
         """
         verification = {}
         for constraint in self.constraints.custom_constraints:
@@ -234,10 +231,8 @@ class CustomVerifier:
     def __get_validation_data(self) -> pd.DataFrame:
         """
         Gets all dataframe rows with validation breaks.
-        Parameters:
-            None: Uses object.data and object.constraints
-        Returns:
-            A pandas DataFrame with rows of validation breaks
+        :param None:
+        :returns: a DataFrame with rows of validation breaks
         """
         failed_data = pd.concat(self.failed_rows)
         return failed_data

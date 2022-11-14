@@ -80,7 +80,7 @@ standard_layout = [
             headings=STANDARD_HEADINGS,
             auto_size_columns=False,
             enable_events=True,
-            key="-C_TABLE-",
+            key="-STANDARD_TABLE-",
             expand_x=True,
             num_rows=20,
         )

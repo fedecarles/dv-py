@@ -9,16 +9,18 @@ def read_file(
 ) -> pd.DataFrame:
     """
     Reads a csv or xlsx file
-    Params:
-        file_path: str a path to csv or xlsx file
-        dtypes: a dictionary of data types
-        downcast: a boolean to downcast data types
-    Returns:
-        A pandas DataFrame
+    :param file_path: an str path to csv or xlsx file
+    :param dtypes: a dictionary of data types
+    :param downcast: a boolean to downcast data types
+    :returns: a DataFrame
     """
     if dtypes:
-        non_dates = dict(filter(lambda val: val[1] != "datetime64[ns]", dtypes.items()))
-        dates = dict(filter(lambda val: val[1] == "datetime64[ns]", dtypes.items()))
+        non_dates = dict(
+            filter(lambda val: val[1] != "datetime64[ns]", dtypes.items())
+        )
+        dates = dict(
+            filter(lambda val: val[1] == "datetime64[ns]", dtypes.items())
+        )
     else:
         non_dates = {}
         dates = {}
@@ -33,17 +35,13 @@ def read_file(
             unix_date = frame[date].clip(lower=0).astype(str)
             unix_date = unix_date.str[:10]
             frame[date] = pd.to_datetime(
-                pd.Series(
-                    unix_date,
-                    dtype="datetime64[ns]",
-                ),
+                pd.Series(unix_date, dtype="datetime64[ns]"),
                 unit="s",
                 errors="ignore",
             )
         else:
             frame[date] = pd.to_datetime(
-                pd.Series(frame[date], dtype="datetime64[ns]"),
-                errors="ignore",
+                pd.Series(frame[date], dtype="datetime64[ns]"), errors="ignore"
             )
 
     if downcast:
@@ -57,13 +55,15 @@ def read_file(
             ):
                 frame[col] = frame[col].astype("category")
             elif issubclass(frame[col].dtypes.type, np.object_) and (
-                len(frame[col].unique()) > 20):
+                len(frame[col].unique()) > 20
+            ):
                 frame[col] = frame[col].astype(str)
     return frame
 
 
 class TypeEncoder(json.JSONEncoder):
     """Custom encoder class for json"""
+
     def default(self, o):
         if isinstance(o, np.bool_):
             return bool(o)
