@@ -184,7 +184,7 @@ class CustomVerifier:
     """
 
     data: pd.DataFrame
-    constraints: list 
+    constraints: list
 
     def __post_init__(self):
         "Post init calculations."
@@ -198,7 +198,7 @@ class CustomVerifier:
         :param constraint: a custom constraint dict with name and query keys
         :return: an int with count of breaks
         """
-        
+
         rows = self.data.query(constraint["query"], engine="python").copy()
         rows["Validation"] = f"{constraint['name']}: {constraint['query']}"
         self.failed_rows.append(rows)
@@ -211,7 +211,7 @@ class CustomVerifier:
         :returns: a DataFrame with number of breaks per column
         """
         verification = {}
-        for constraint in self.constraints.custom_constraints:
+        for constraint in self.constraints:
             verification[constraint["name"]] = {
                     "name": constraint["name"],
                     "rule": constraint["query"],

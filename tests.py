@@ -3,93 +3,83 @@
 import unittest
 import pandas as pd
 import numpy as np
-from constraints import Constraints
-from verifier import Verifier
-from custom_constraints import CustomConstraint, CustomConstraintSet
-from custom_verifier import CustomVerifier
+from constraints import StandardConstraints, CustomConstraints
+from verifiers import StandardVerifier
 
 # Testing data from Kaggle:
 # https://www.kaggle.com/datasets/jillanisofttech/brain-stroke-dataset
 
 d1 = pd.read_csv(r"test_data/brain_stroke.csv")
 d2 = pd.read_csv(r"test_data/brain_stroke_bad.csv")
-#c1 = Constraints()
-#c1.generate_constraints(d1)
-#c1.modify_constraint("age", {"unique": True})
-#c1 = c1.constraints
-#v1 = Verifier(d2, c1)
-#v1 = Verifier(d1, c1)
+s = StandardConstraints()
+s.generate_constraints(d1)
+s.modify_constraint("ID1", {"nullable": False})
+s.modify_constraint("age", {"unique": True})
 
-c1 = CustomConstraint("rule1", "age > 80")
-c2 = CustomConstraint("rule2", "gender == 'Female'")
-c3 = CustomConstraint("rule3", "gender == 'Male'")
+c = CustomConstraints()
+c.add_custom_constraint("rule1", "age > 80")
+c.add_custom_constraint("rule2", "gender == 'Female'")
+c.add_custom_constraint("rule3", "gender == 'Male'")
 
-s1 = CustomConstraintSet([c1, c2, c3])
 
-v1 = CustomVerifier(d1, s1)
-print(v1.validation_summary)
+class TestConstraints(unittest.TestCase):
+    """Test cases for StandardConstraints"""
 
-#class TestConstraints(unittest.TestCase):
-#    """Test cases for DataDiscoverer"""
-#
-#    data = Constraints()
-#
-#    def test_discovery(self) -> None:
-#        """Test data type"""
-#        self.assertEqual(self.data.get_data_type(d1.data, "stroke"), "bool")
-#        self.assertEqual(self.data.is_nullable(d1.data, "gender"), False)
-#        self.assertEqual(self.data.is_unique(d1.data, "bmi"), False)
-#        self.assertEqual(self.data.max_length(d1.data, "Residence_type"), 5)
-#        self.assertEqual(self.data.min_length(d1.data, "Residence_type"), 5)
-#        self.assertEqual(
-#            self.data.value_range(d1.data, "work_type"),
-#            {"Govt_job", "Private", "Self-employed", "children", np.NaN},
-#        )
-#        self.assertEqual(
-#            self.data.min_value(d1.data, "avg_glucose_level"),
-#            np.float32(55.12),
-#        )
-#        self.assertEqual(
-#            self.data.max_value(d1.data, "avg_glucose_level"),
-#            np.float32(271.74),
-#        )
-#        self.assertIs(type(self.data.constraints), dict)
-#
-#
-#class TestVerifier(unittest.TestCase):
-#    """Test cases for DataVerifier"""
-#
-#    v1 = Verifier(d2.data, c1)
-#
-#    def test_checks(self):
-#        """Test null values"""
-#        self.assertEqual(
-#            self.v1.check_nullable(c1["age"]["nullable"], "age"), 5
-#        )
-#        self.assertEqual(
-#            self.v1.check_unique(c1["age"]["unique"], "age"), 4876
-#        )
-#        self.assertEqual(
-#            self.v1.check_min_length(c1["gender"]["min_length"], "gender"), 1
-#        )
-#        self.assertEqual(
-#            self.v1.check_max_length(
-#                c1["Residence_type"]["max_length"], "Residence_type"
-#            ),
-#            2,
-#        )
-#        self.assertEqual(
-#            self.v1.check_value_range(
-#                c1["work_type"]["value_range"], "work_type"
-#            ),
-#            3,
-#        )
-#        self.assertEqual(
-#            self.v1.check_max_value(c1["bmi"]["max_value"], "bmi"), 1
-#        )
-#        self.assertEqual(
-#            self.v1.check_min_value(c1["bmi"]["min_value"], "bmi"), 1
-#        )
+    def test_discovery(self) -> None:
+        """Test data type"""
+        self.assertEqual(s.get_data_type(d1, "stroke"), "bool")
+        self.assertEqual(s.is_nullable(d1, "gender"), False)
+        self.assertEqual(s.is_unique(d1, "bmi"), False)
+        self.assertEqual(s.max_length(d1, "Residence_type"), 5)
+        self.assertEqual(s.min_length(d1, "Residence_type"), 5)
+        self.assertEqual(
+            s.value_range(d1, "work_type"),
+            {"Govt_job", "Private", "Self-employed", "children", np.NaN},
+        )
+        self.assertEqual(
+            s.min_value(d1, "avg_glucose_level"),
+            55.12,
+        )
+        self.assertEqual(
+            s.max_value(d1, "avg_glucose_level"),
+            271.74,
+        )
+        self.assertIs(type(s.constraints), dict)
+
+
+class TestVerifier(unittest.TestCase):
+    """Test cases for DataVerifier"""
+
+    v1 = StandardVerifier(d1, s.constraints)
+
+    def test_checks(self):
+        """Test null values"""
+        self.assertEqual(
+            self.v1.check_nullable(s.constraints["age"]["nullable"], "age"), 0
+        )
+        self.assertEqual(
+            self.v1.check_unique(s.constraints["age"]["unique"], "age"), 4877
+        )
+        self.assertEqual(
+            self.v1.check_min_length(
+                s.constraints["gender"]["min_length"], "gender"
+            ),
+            0,
+        )
+        self.assertEqual(
+            self.v1.check_max_length(
+                s.constraints["Residence_type"]["max_length"], "Residence_type"
+            ),
+            0,
+        )
+        self.assertEqual(
+            self.v1.check_max_value(s.constraints["bmi"]["max_value"], "bmi"),
+            0,
+        )
+        self.assertEqual(
+            self.v1.check_min_value(s.constraints["bmi"]["min_value"], "bmi"),
+            0,
+        )
 
 
 if __name__ == "__main__":

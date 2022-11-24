@@ -6,7 +6,7 @@ import numpy as np
 from constraints import StandardConstraints, CustomConstraints
 from verifiers import StandardVerifier, CustomVerifier
 from utils import read_file
-from layouts import STANDARD_HEADINGS, CUSTOM_HEADINGS, tabgrp
+from layouts import STANDARD_HEADINGS, tabgrp
 
 
 def view_constraint_properties(row: pd.DataFrame):
@@ -150,8 +150,9 @@ class VerifierProgress(StandardVerifier):
 
 # Main loop
 def main():
+    "Main GUI loop"
 
-    ENFORCE_DTYPES = True
+    enforce_dtypes = True
 
     while True:
         event, values = window.read()
@@ -166,13 +167,13 @@ def main():
             if event == "Generate Constraints":
                 const = StandardConstraints()
                 const.generate_constraints(frame)
-                c_update = update_table(STANDARD_HEADINGS, const.constraints)
-                window["-STANDARD_TABLE-"].Update(c_update.values.tolist())
+                t_update = update_table(STANDARD_HEADINGS, const.constraints)
+                window["-STANDARD_TABLE-"].Update(t_update.values.tolist())
 
             if event == "-STANDARD_TABLE-":
                 t_data_index = values["-STANDARD_TABLE-"]
                 if len(t_data_index) > 0:
-                    row_data = c_update.filter(items=t_data_index, axis=0)
+                    row_data = t_update.filter(items=t_data_index, axis=0)
                     view_constraint_properties(row_data)
 
             if event == "Update":
@@ -206,26 +207,26 @@ def main():
                 }
                 del mod["attribute"]
                 const.modify_constraint(new_values["attribute"], mod)
-                m_update = update_table(STANDARD_HEADINGS, const.constraints)
-                window["-STANDARD_TABLE-"].Update(m_update.values.tolist())
+                t_update = update_table(STANDARD_HEADINGS, const.constraints)
+                window["-STANDARD_TABLE-"].Update(t_update.values.tolist())
 
             if event == "Recast dtypes":
                 dtypes = get_constraints_dtypes(const.constraints)
                 frame = read_file(values["-IN-"], downcast=True, dtypes=dtypes)
                 const.generate_constraints(frame)
-                c_update = update_table(STANDARD_HEADINGS, const.constraints)
-                window["-STANDARD_TABLE-"].Update(c_update.values.tolist())
+                t_update = update_table(STANDARD_HEADINGS, const.constraints)
+                window["-STANDARD_TABLE-"].Update(t_update.values.tolist())
             if event == "-DTYPES-":
-                ENFORCE_DTYPES = not ENFORCE_DTYPES
+                enforce_dtypes = not enforce_dtypes
                 window["-DTYPES-"].update(
                     button_color="white on green"
-                    if ENFORCE_DTYPES
+                    if enforce_dtypes
                     else "white on red"
                 )
             if event == "Validate Data":
                 try:
                     valid = VerifierProgress(
-                        frame, const.constraints, ENFORCE_DTYPES
+                        frame, const.constraints, enforce_dtypes
                     )
                     v_update = update_table(
                         STANDARD_HEADINGS, valid.validation_summary
@@ -235,8 +236,8 @@ def main():
                         v_update.sum(axis=1, numeric_only=True) >= 1
                     ].reset_index(drop=True)
                     window["-V_TABLE-"].Update(v_update.values.tolist())
-                except KeyError as v:
-                    sg.Popup(f"Constraint for {v} but {v} not in data")
+                except KeyError as ke:
+                    sg.Popup(f"Constraint for {ke} but {ke} not in data")
         else:
             sg.PopupError("No Data is loaded")
 
@@ -290,7 +291,9 @@ def main():
             )
 
         if event == "Validate Custom":
-            custom_verify = CustomVerifier(frame, custom_constraints)
+            custom_verify = CustomVerifier(
+                    frame, custom_constraints.custom_constraints
+                    )
             window["-CV_TABLE-"].Update(
                 custom_verify.validation_summary.values.tolist()
             )
@@ -315,8 +318,8 @@ def main():
         if event == "-READ_C-":
             const = StandardConstraints()
             const.read_constraints(values["-READ_C-"])
-            c_update = update_table(STANDARD_HEADINGS, const.constraints)
-            window["-STANDARD_TABLE-"].Update(c_update.values.tolist())
+            t_update = update_table(STANDARD_HEADINGS, const.constraints)
+            window["-STANDARD_TABLE-"].Update(t_update.values.tolist())
         if event == "-SAVE_V_AS-":
             valid.validation_summary.T.to_csv(values["-SAVE_V_AS-"])
 
