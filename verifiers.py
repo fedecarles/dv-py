@@ -121,14 +121,6 @@ class StandardVerifier:
             return breaks.sum()
         return None
 
-    def check_custom_constraints(self, constraint: dict) -> dict:
-        """Check custom constraints"""
-        for c in constraint:
-            rows = self.data.query(c["query"]).copy()
-            rows["Validation"] = f"{c['name']}: {c['query']}"
-            self.failed_rows.append(rows)
-        return rows.shape[0]
-
     def _call_checks(self, check: str) -> dict:
         """
         Map constraint names with functions.
@@ -207,7 +199,7 @@ class CustomVerifier:
         :return: an int with count of breaks
         """
         
-        rows = self.data.query(constraint["query"]).copy()
+        rows = self.data.query(constraint["query"], engine="python").copy()
         rows["Validation"] = f"{constraint['name']}: {constraint['query']}"
         self.failed_rows.append(rows)
         return rows.shape[0]
