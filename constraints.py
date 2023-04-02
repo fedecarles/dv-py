@@ -17,8 +17,8 @@ class StandardConstraints:
 
     def __str__(self):
         var = []
-        for k,v in self.constraints.items():
-            var.append(f'{k}: {v}')
+        for key,val in self.constraints.items():
+            var.append(f'{key}: {val}')
         return "\n".join(var)
 
     def get_data_type(self, data: pd.DataFrame, colname: str) -> str:
@@ -76,18 +76,17 @@ class StandardConstraints:
         :return: A dict with constraints
         """
         all_cols = data.columns
-        import numpy as np
 
         # separate string columns from category columns
-        for col in all_cols:                                          
-            if issubclass(data[col].dtypes.type, np.object_) and (      
-                len(data[col].unique()) <= 20                             
-            ):                                                             
-                data[col] = data[col].astype("category")                 
-            elif issubclass(data[col].dtypes.type, np.object_) and (      
-                len(data[col].unique()) > 20                              
-            ):                                                             
-                data[col] = data[col].astype(str)                        
+        for col in all_cols:
+            if issubclass(data[col].dtypes.type, np.object_) and (
+                len(data[col].unique()) <= 20
+            ):
+                data[col] = data[col].astype("category")
+            elif issubclass(data[col].dtypes.type, np.object_) and (
+                len(data[col].unique()) > 20
+            ):
+                data[col] = data[col].astype(str)
 
         nr_cols = data.select_dtypes(include=["number"]).columns
         str_cols = data.select_dtypes(include=["string", "object"]).columns
