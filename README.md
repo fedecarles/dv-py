@@ -34,6 +34,8 @@ This program has some dependencies, mainly pandas and numpy. PySimpleGUI is requ
 for running the gui version. It's recommended to install these in a virtual environment.
 
 ```
+git clone https://github.com/fedecarles/dv-py
+cd dv-py
 pip install -r requirements.txt
 
 ```
