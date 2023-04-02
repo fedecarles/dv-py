@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass, field
 from ast import literal_eval
 import pandas as pd
+import numpy as np
 from utils import TypeEncoder
 
 
