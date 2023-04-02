@@ -13,7 +13,7 @@ d1 = pd.read_csv(r"test_data/brain_stroke.csv")
 d2 = pd.read_csv(r"test_data/brain_stroke_bad.csv")
 s = StandardConstraints()
 s.generate_constraints(d1)
-s.modify_constraint("ID1", {"nullable": False})
+s.modify_constraint("work_type", {"nullable": False})
 s.modify_constraint("age", {"unique": True})
 
 c = CustomConstraints()

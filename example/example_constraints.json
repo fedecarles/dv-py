@@ -1,0 +1,102 @@
+{
+    "gender": {
+        "data_type": "category",
+        "nullable": false,
+        "min_length": 4,
+        "max_length": 6,
+        "value_range": [
+            "Male",
+            "Female"
+        ]
+    },
+    "age": {
+        "data_type": "float64",
+        "nullable": false,
+        "min_value": 0.08,
+        "max_value": 80
+    },
+    "hypertension": {
+        "data_type": "int64",
+        "nullable": false,
+        "min_value": 0,
+        "max_value": 1
+    },
+    "heart_disease": {
+        "data_type": "int64",
+        "nullable": false,
+        "min_value": 0,
+        "max_value": 1
+    },
+    "ever_married": {
+        "data_type": "category",
+        "nullable": false,
+        "min_length": 2,
+        "max_length": 3,
+        "value_range": [
+            "Yes",
+            "No"
+        ]
+    },
+    "work_type": {
+        "data_type": "category",
+        "nullable": false,
+        "min_length": 7,
+        "max_length": 13.0,
+        "value_range": [
+            "Govt_job",
+            NaN,
+            "children",
+            "Private",
+            "Self-employed"
+        ]
+    },
+    "Residence_type": {
+        "data_type": "category",
+        "nullable": false,
+        "min_length": 5,
+        "max_length": 5,
+        "value_range": [
+            "Rural",
+            "Urban"
+        ]
+    },
+    "avg_glucose_level": {
+        "data_type": "float64",
+        "nullable": false,
+        "min_value": 55.12,
+        "max_value": 271.74
+    },
+    "bmi": {
+        "data_type": "float64",
+        "nullable": false,
+        "min_value": 14.0,
+        "max_value": 48.9
+    },
+    "smoking_status": {
+        "data_type": "category",
+        "nullable": false,
+        "min_length": 6,
+        "max_length": 15,
+        "value_range": [
+            "Unknown",
+            "smokes",
+            "never smoked",
+            "formerly smoked"
+        ]
+    },
+    "stroke": {
+        "data_type": "bool",
+        "nullable": false
+    },
+    "date": {
+        "data_type": "datetime64[ns]",
+        "nullable": false,
+        "min_length": 10,
+        "max_length": 10,
+        "value_range": [
+            "2021/12/31",
+            "2022/06/30",
+            "2022/03/31"
+        ]
+    }
+}

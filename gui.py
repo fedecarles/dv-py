@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """GUI interface for frame validation"""
 from pathlib import Path
 import PySimpleGUI as sg

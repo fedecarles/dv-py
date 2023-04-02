@@ -141,13 +141,13 @@ class StandardVerifier:
         }
         return checks_dict[check]
 
-    def __validate_data(self, enforce_dtypes: bool = False) -> pd.DataFrame:
+    def __validate_data(self) -> pd.DataFrame:
         """
         Run all checks for the DataFrame
         :param enforce_dtypes: a bool to enforce constraint dtype on validation
         :return: a DataFrame with number of breaks per column
         """
-        if enforce_dtypes:
+        if self.enforce_dtypes:
             dtypes = {
                 out_key: in_val
                 for out_key, out_val in self.constraints.items()
