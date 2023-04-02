@@ -1,3 +1,4 @@
+# pylint: skip-file
 """ This module contains utility and helper functions"""
 import json
 import pandas as pd

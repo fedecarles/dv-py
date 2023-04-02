@@ -1,3 +1,4 @@
+# pylint: skip-file
 #!/usr/bin/env python
 
 """GUI interface for frame validation"""
