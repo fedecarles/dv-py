@@ -31,7 +31,7 @@ validated on a recurring basis.
 ## Installation
 
 This program has some dependencies, mainly pandas and numpy. PySimpleGUI is required
-for running the gui version. It's recommended to install these in a virtual environtment.
+for running the gui version. It's recommended to install these in a virtual environment.
 
 ```
 pip install -r requirements.txt
@@ -68,7 +68,7 @@ stroke: {'data_type': 'bool', 'nullable': False}
 date: {'data_type': 'category', 'nullable': False, 'min_length': 10, 'max_length': 10, 'value_range': {'2022/06/30', '2021/12/31', '2022/03/31'}}
 ```
 
-The individuals constraints can be modified as needed with the **modify_constraint** method.
+The individual constraints can be modified as needed with the **modify_constraint** method.
 
 ```python
 constraints.modify_constraint("gender", {"data_type": "category"}) 
