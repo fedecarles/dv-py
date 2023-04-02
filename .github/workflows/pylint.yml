@@ -22,7 +22,7 @@ jobs:
         pip install pysimplegui
     - name: Analysing the code with pylint
     - paths-ignore:
-      - 'gui.py'
-      - 'utils.py'
+        'gui.py'
+        'utils.py'
       run: |
         pylint $(git ls-files '*.py')
